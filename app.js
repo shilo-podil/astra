@@ -10,6 +10,93 @@ const STORAGE_KEYS = {
   visited: 'astra_visited',
 };
 
+const I18N = {
+  he: { newChat: 'שיחה חדשה', categories: 'קטגוריות', history: 'היסטוריה', settings: 'הגדרות', cat_general: 'כללי', cat_code: 'קוד ופיתוח', cat_writing: 'כתיבה', cat_learning: 'לימוד והבנה', cat_life: 'חיים ויומיום', cat_business: 'עסקים', cat_creative: 'יצירה ורעיונות', cat_analysis: 'ניתוח ומחקר', inputPlaceholder: 'שאל את Astra כל דבר...', disclaimer: 'Astra AI יכולה לטעות. בדוק מידע חשוב.', sendHint: 'Enter לשליחה • Shift+Enter לשורה חדשה', welcomeTitle: 'שלום, אני', emptyHistory: 'אין שיחות עדיין', settingsTitle: 'הגדרות', apiKeyLabel: 'Anthropic API Key', nameLabel: 'שם תצוגה', namePh: 'איך לקרוא לך?', themeLabel: 'ערכת נושא', themeDark: 'כהה', themeLight: 'בהיר', langLabel: 'שפה', cancel: 'ביטול', save: 'שמור', askGeneral: 'במה אוכל לעזור היום?', askCode: 'מה תרצה שאכתוב לך בקוד?', askWriting: 'מה תרצה שאכתוב?', askLearning: 'מה תרצה ללמוד היום?', askLife: 'במה תרצה שאעזור לך?', askBusiness: 'על מה תרצה לעבוד היום?', askCreative: 'מה תרצה ליצור?', askAnalysis: 'מה תרצה שאנתח עבורך?' },
+  en: { newChat: 'New chat', categories: 'Categories', history: 'History', settings: 'Settings', cat_general: 'General', cat_code: 'Code & Dev', cat_writing: 'Writing', cat_learning: 'Learning', cat_life: 'Life & Daily', cat_business: 'Business', cat_creative: 'Creative', cat_analysis: 'Analysis', inputPlaceholder: 'Ask Astra anything...', disclaimer: 'Astra AI can make mistakes. Verify important info.', sendHint: 'Enter to send • Shift+Enter for new line', welcomeTitle: "Hello, I'm", emptyHistory: 'No conversations yet', settingsTitle: 'Settings', apiKeyLabel: 'Anthropic API Key', nameLabel: 'Display name', namePh: 'What should I call you?', themeLabel: 'Theme', themeDark: 'Dark', themeLight: 'Light', langLabel: 'Language', cancel: 'Cancel', save: 'Save', askGeneral: 'How can I help you today?', askCode: 'What code do you need?', askWriting: 'What would you like me to write?', askLearning: 'What would you like to learn?', askLife: 'How can I help you?', askBusiness: 'What are we working on today?', askCreative: 'What would you like to create?', askAnalysis: 'What would you like me to analyze?' },
+  es: { newChat: 'Nueva conversación', categories: 'Categorías', history: 'Historial', settings: 'Ajustes', cat_general: 'General', cat_code: 'Código', cat_writing: 'Escritura', cat_learning: 'Aprendizaje', cat_life: 'Vida diaria', cat_business: 'Negocios', cat_creative: 'Creativo', cat_analysis: 'Análisis', inputPlaceholder: 'Pregúntame cualquier cosa...', disclaimer: 'Astra AI puede equivocarse. Verifica información importante.', sendHint: 'Enter para enviar • Shift+Enter nueva línea', welcomeTitle: 'Hola, soy', emptyHistory: 'Sin conversaciones aún', settingsTitle: 'Ajustes', apiKeyLabel: 'Clave API Anthropic', nameLabel: 'Nombre', namePh: '¿Cómo te llamas?', themeLabel: 'Tema', themeDark: 'Oscuro', themeLight: 'Claro', langLabel: 'Idioma', cancel: 'Cancelar', save: 'Guardar', askGeneral: '¿Cómo puedo ayudarte hoy?', askCode: '¿Qué código necesitas?', askWriting: '¿Qué te gustaría que escriba?', askLearning: '¿Qué te gustaría aprender?', askLife: '¿En qué puedo ayudarte?', askBusiness: '¿En qué trabajamos hoy?', askCreative: '¿Qué quieres crear?', askAnalysis: '¿Qué quieres analizar?' },
+  ar: { newChat: 'محادثة جديدة', categories: 'الفئات', history: 'السجل', settings: 'الإعدادات', cat_general: 'عام', cat_code: 'البرمجة', cat_writing: 'الكتابة', cat_learning: 'التعلم', cat_life: 'الحياة', cat_business: 'الأعمال', cat_creative: 'إبداعي', cat_analysis: 'التحليل', inputPlaceholder: 'اسألني أي شيء...', disclaimer: 'قد ترتكب Astra AI أخطاء. تحقق من المعلومات المهمة.', sendHint: 'Enter للإرسال • Shift+Enter سطر جديد', welcomeTitle: 'مرحباً، أنا', emptyHistory: 'لا توجد محادثات بعد', settingsTitle: 'الإعدادات', apiKeyLabel: 'مفتاح Anthropic API', nameLabel: 'الاسم', namePh: 'بماذا أناديك؟', themeLabel: 'السمة', themeDark: 'داكن', themeLight: 'فاتح', langLabel: 'اللغة', cancel: 'إلغاء', save: 'حفظ', askGeneral: 'كيف يمكنني مساعدتك اليوم؟', askCode: 'ما الكود الذي تحتاجه؟', askWriting: 'ماذا تريدني أن أكتب؟', askLearning: 'ماذا تريد أن تتعلم؟', askLife: 'بماذا أساعدك؟', askBusiness: 'على ماذا نعمل اليوم؟', askCreative: 'ماذا تريد أن تنشئ؟', askAnalysis: 'ماذا تريدني أن أحلل؟' },
+  ru: { newChat: 'Новый чат', categories: 'Категории', history: 'История', settings: 'Настройки', cat_general: 'Общее', cat_code: 'Код', cat_writing: 'Текст', cat_learning: 'Обучение', cat_life: 'Жизнь', cat_business: 'Бизнес', cat_creative: 'Творчество', cat_analysis: 'Анализ', inputPlaceholder: 'Спросите Astra о чём угодно...', disclaimer: 'Astra AI может ошибаться. Проверяйте важную информацию.', sendHint: 'Enter — отправить • Shift+Enter — новая строка', welcomeTitle: 'Привет, я', emptyHistory: 'Чатов пока нет', settingsTitle: 'Настройки', apiKeyLabel: 'Ключ Anthropic API', nameLabel: 'Имя', namePh: 'Как тебя зовут?', themeLabel: 'Тема', themeDark: 'Тёмная', themeLight: 'Светлая', langLabel: 'Язык', cancel: 'Отмена', save: 'Сохранить', askGeneral: 'Чем могу помочь сегодня?', askCode: 'Какой код нужен?', askWriting: 'Что мне написать?', askLearning: 'Что хотите изучить?', askLife: 'Чем помочь?', askBusiness: 'Над чем работаем?', askCreative: 'Что создадим?', askAnalysis: 'Что проанализировать?' },
+  fr: { newChat: 'Nouvelle conversation', categories: 'Catégories', history: 'Historique', settings: 'Paramètres', cat_general: 'Général', cat_code: 'Code', cat_writing: 'Écriture', cat_learning: 'Apprentissage', cat_life: 'Vie quotidienne', cat_business: 'Affaires', cat_creative: 'Créatif', cat_analysis: 'Analyse', inputPlaceholder: 'Demandez à Astra...', disclaimer: 'Astra AI peut se tromper. Vérifiez les infos importantes.', sendHint: 'Entrée pour envoyer • Shift+Entrée nouvelle ligne', welcomeTitle: 'Bonjour, je suis', emptyHistory: 'Aucune conversation', settingsTitle: 'Paramètres', apiKeyLabel: 'Clé API Anthropic', nameLabel: 'Nom', namePh: 'Comment vous appeler ?', themeLabel: 'Thème', themeDark: 'Sombre', themeLight: 'Clair', langLabel: 'Langue', cancel: 'Annuler', save: 'Enregistrer', askGeneral: 'Comment puis-je aider ?', askCode: 'Quel code voulez-vous ?', askWriting: 'Que dois-je écrire ?', askLearning: 'Que voulez-vous apprendre ?', askLife: 'Comment puis-je aider ?', askBusiness: 'Sur quoi travaillons-nous ?', askCreative: 'Que créer ?', askAnalysis: 'Quoi analyser ?' },
+  de: { newChat: 'Neuer Chat', categories: 'Kategorien', history: 'Verlauf', settings: 'Einstellungen', cat_general: 'Allgemein', cat_code: 'Code', cat_writing: 'Schreiben', cat_learning: 'Lernen', cat_life: 'Alltag', cat_business: 'Business', cat_creative: 'Kreativ', cat_analysis: 'Analyse', inputPlaceholder: 'Frag Astra alles...', disclaimer: 'Astra AI kann sich irren. Wichtige Infos prüfen.', sendHint: 'Enter zum Senden • Shift+Enter neue Zeile', welcomeTitle: 'Hallo, ich bin', emptyHistory: 'Keine Chats', settingsTitle: 'Einstellungen', apiKeyLabel: 'Anthropic API-Schlüssel', nameLabel: 'Name', namePh: 'Wie heißt du?', themeLabel: 'Design', themeDark: 'Dunkel', themeLight: 'Hell', langLabel: 'Sprache', cancel: 'Abbrechen', save: 'Speichern', askGeneral: 'Wie kann ich heute helfen?', askCode: 'Welchen Code brauchst du?', askWriting: 'Was soll ich schreiben?', askLearning: 'Was möchtest du lernen?', askLife: 'Wobei kann ich helfen?', askBusiness: 'Woran arbeiten wir?', askCreative: 'Was erschaffen wir?', askAnalysis: 'Was soll ich analysieren?' },
+  'zh-CN': { newChat: '新对话', categories: '分类', history: '历史', settings: '设置', cat_general: '常规', cat_code: '代码', cat_writing: '写作', cat_learning: '学习', cat_life: '生活', cat_business: '商务', cat_creative: '创意', cat_analysis: '分析', inputPlaceholder: '问 Astra 任何事...', disclaimer: 'Astra AI 可能会犯错，请核实重要信息。', sendHint: 'Enter 发送 • Shift+Enter 换行', welcomeTitle: '你好，我是', emptyHistory: '暂无对话', settingsTitle: '设置', apiKeyLabel: 'Anthropic API 密钥', nameLabel: '昵称', namePh: '怎么称呼你？', themeLabel: '主题', themeDark: '深色', themeLight: '浅色', langLabel: '语言', cancel: '取消', save: '保存', askGeneral: '今天能帮你什么？', askCode: '你需要什么代码？', askWriting: '想让我写什么？', askLearning: '想学什么？', askLife: '怎么帮你？', askBusiness: '今天处理什么？', askCreative: '想创作什么？', askAnalysis: '分析什么？' },
+  ja: { newChat: '新しい会話', categories: 'カテゴリー', history: '履歴', settings: '設定', cat_general: '一般', cat_code: 'コード', cat_writing: '執筆', cat_learning: '学習', cat_life: '日常', cat_business: 'ビジネス', cat_creative: 'クリエイティブ', cat_analysis: '分析', inputPlaceholder: 'Astra に何でも聞いて...', disclaimer: 'Astra AI は間違うことがあります。重要な情報は確認してください。', sendHint: 'Enter で送信 • Shift+Enter 改行', welcomeTitle: 'こんにちは、', emptyHistory: '会話なし', settingsTitle: '設定', apiKeyLabel: 'Anthropic API キー', nameLabel: '名前', namePh: 'お名前は？', themeLabel: 'テーマ', themeDark: 'ダーク', themeLight: 'ライト', langLabel: '言語', cancel: 'キャンセル', save: '保存', askGeneral: '今日は何をお手伝い？', askCode: 'どんなコード？', askWriting: '何を書きましょう？', askLearning: '何を学びますか？', askLife: '何を手伝いますか？', askBusiness: '今日は何を？', askCreative: '何を作りますか？', askAnalysis: '何を分析しますか？' },
+  it: { newChat: 'Nuova chat', categories: 'Categorie', history: 'Cronologia', settings: 'Impostazioni', cat_general: 'Generale', cat_code: 'Codice', cat_writing: 'Scrittura', cat_learning: 'Apprendimento', cat_life: 'Vita', cat_business: 'Business', cat_creative: 'Creativo', cat_analysis: 'Analisi', inputPlaceholder: 'Chiedi qualsiasi cosa...', disclaimer: 'Astra AI può sbagliare. Verifica informazioni importanti.', sendHint: 'Invio per inviare • Shift+Invio nuova riga', welcomeTitle: 'Ciao, sono', emptyHistory: 'Nessuna conversazione', settingsTitle: 'Impostazioni', apiKeyLabel: 'Chiave API Anthropic', nameLabel: 'Nome', namePh: 'Come ti chiami?', themeLabel: 'Tema', themeDark: 'Scuro', themeLight: 'Chiaro', langLabel: 'Lingua', cancel: 'Annulla', save: 'Salva', askGeneral: 'Come posso aiutarti oggi?', askCode: 'Che codice ti serve?', askWriting: 'Cosa devo scrivere?', askLearning: 'Cosa vuoi imparare?', askLife: 'In cosa posso aiutarti?', askBusiness: 'Su cosa lavoriamo?', askCreative: 'Cosa creiamo?', askAnalysis: 'Cosa analizziamo?' },
+  pt: { newChat: 'Nova conversa', categories: 'Categorias', history: 'Histórico', settings: 'Configurações', cat_general: 'Geral', cat_code: 'Código', cat_writing: 'Escrita', cat_learning: 'Aprendizado', cat_life: 'Vida', cat_business: 'Negócios', cat_creative: 'Criativo', cat_analysis: 'Análise', inputPlaceholder: 'Pergunte qualquer coisa...', disclaimer: 'Astra AI pode errar. Verifique informações importantes.', sendHint: 'Enter para enviar • Shift+Enter nova linha', welcomeTitle: 'Olá, sou', emptyHistory: 'Sem conversas', settingsTitle: 'Configurações', apiKeyLabel: 'Chave API Anthropic', nameLabel: 'Nome', namePh: 'Como te chamar?', themeLabel: 'Tema', themeDark: 'Escuro', themeLight: 'Claro', langLabel: 'Idioma', cancel: 'Cancelar', save: 'Salvar', askGeneral: 'Como posso ajudar hoje?', askCode: 'Que código precisa?', askWriting: 'O que devo escrever?', askLearning: 'O que quer aprender?', askLife: 'Como posso ajudar?', askBusiness: 'No que trabalhamos?', askCreative: 'O que criamos?', askAnalysis: 'O que analisar?' },
+  tr: { newChat: 'Yeni sohbet', categories: 'Kategoriler', history: 'Geçmiş', settings: 'Ayarlar', cat_general: 'Genel', cat_code: 'Kod', cat_writing: 'Yazma', cat_learning: 'Öğrenme', cat_life: 'Yaşam', cat_business: 'İş', cat_creative: 'Yaratıcı', cat_analysis: 'Analiz', inputPlaceholder: 'Astra\'ya her şeyi sorabilirsin...', disclaimer: 'Astra AI hata yapabilir. Önemli bilgileri doğrula.', sendHint: 'Enter ile gönder • Shift+Enter yeni satır', welcomeTitle: 'Merhaba, ben', emptyHistory: 'Henüz sohbet yok', settingsTitle: 'Ayarlar', apiKeyLabel: 'Anthropic API Anahtarı', nameLabel: 'İsim', namePh: 'Sana nasıl seslenelim?', themeLabel: 'Tema', themeDark: 'Koyu', themeLight: 'Açık', langLabel: 'Dil', cancel: 'İptal', save: 'Kaydet', askGeneral: 'Bugün nasıl yardım edebilirim?', askCode: 'Ne kod lazım?', askWriting: 'Ne yazayım?', askLearning: 'Ne öğrenmek istersin?', askLife: 'Nasıl yardım edebilirim?', askBusiness: 'Bugün ne üzerinde çalışıyoruz?', askCreative: 'Ne yaratalım?', askAnalysis: 'Ne analiz edeyim?' },
+};
+
+const RTL_LANGS = ['he', 'ar', 'fa', 'ur'];
+
+function t(key) {
+  const map = I18N[state.lang] || I18N[state.lang.split('-')[0]] || I18N.en;
+  return map[key] || I18N.en[key] || key;
+}
+
+function applyLanguage() {
+  document.documentElement.lang = state.lang;
+  document.documentElement.dir = RTL_LANGS.includes(state.lang) ? 'rtl' : 'ltr';
+  // Sidebar
+  const newChatBtn = document.getElementById('newChatMain');
+  if (newChatBtn) {
+    const txt = newChatBtn.childNodes[newChatBtn.childNodes.length - 1];
+    if (txt && txt.nodeType === 3) txt.textContent = ' ' + t('newChat');
+  }
+  const sectionTitles = document.querySelectorAll('.section-title');
+  if (sectionTitles[0]) sectionTitles[0].textContent = t('categories');
+  if (sectionTitles[1]) sectionTitles[1].textContent = t('history');
+  const settingsBtn = document.getElementById('settingsBtn');
+  if (settingsBtn) {
+    const last = settingsBtn.childNodes[settingsBtn.childNodes.length - 1];
+    if (last && last.nodeType === 3) last.textContent = ' ' + t('settings');
+  }
+  // Categories
+  const catKeys = ['general', 'code', 'writing', 'learning', 'life', 'business', 'creative', 'analysis'];
+  document.querySelectorAll('.category').forEach((btn) => {
+    const cat = btn.dataset.category;
+    const span = btn.querySelectorAll('span')[1];
+    if (span) span.textContent = t('cat_' + cat);
+  });
+  // Welcome
+  const h1 = document.querySelector('.welcome h1');
+  if (h1) h1.innerHTML = `${escapeHtml(t('welcomeTitle'))} <span class="grad">Astra</span>`;
+  const subtitle = document.querySelector('.subtitle');
+  if (subtitle) {
+    const askKey = 'ask' + state.category.charAt(0).toUpperCase() + state.category.slice(1);
+    subtitle.textContent = t(askKey);
+  }
+  // Input
+  const inputEl = document.getElementById('input');
+  if (inputEl) inputEl.placeholder = t('inputPlaceholder');
+  const dis = document.querySelector('.disclaimer');
+  if (dis) dis.textContent = t('disclaimer');
+  const hint = document.querySelector('.hint');
+  if (hint) hint.textContent = t('sendHint');
+  // Empty history
+  const eh = document.querySelector('.empty-history');
+  if (eh) eh.textContent = t('emptyHistory');
+  // Modal
+  const modalH = document.querySelector('.modal-header h2');
+  if (modalH) modalH.textContent = t('settingsTitle');
+  const fields = document.querySelectorAll('.field > span');
+  if (fields[0]) fields[0].textContent = t('apiKeyLabel');
+  if (fields[1]) fields[1].textContent = t('nameLabel');
+  if (fields[2]) fields[2].textContent = t('themeLabel');
+  if (fields[3]) fields[3].textContent = t('langLabel');
+  const userInput = document.getElementById('userNameInput');
+  if (userInput) userInput.placeholder = t('namePh');
+  const themeSel = document.getElementById('themeSelect');
+  if (themeSel) {
+    if (themeSel.options[0]) themeSel.options[0].textContent = t('themeDark');
+    if (themeSel.options[1]) themeSel.options[1].textContent = t('themeLight');
+  }
+  const cancelBtn = document.querySelector('.btn-secondary');
+  if (cancelBtn) cancelBtn.textContent = t('cancel');
+  const saveBtn = document.getElementById('saveSettings');
+  if (saveBtn) saveBtn.textContent = t('save');
+  // Topbar title
+  if (els.topbarTitle) els.topbarTitle.textContent = `Astra AI · ${t('cat_' + state.category)}`;
+}
+
 const LANGUAGES = [
   { code: 'he', name: 'עברית', text: 'מאת אלון דה בר' },
   { code: 'en', name: 'English', text: 'by Alon Debeer' },
@@ -66,7 +153,7 @@ const LANGUAGES = [
 
 const LANG_INSTRUCTION = ' חשוב: זהה אוטומטית את השפה שבה המשתמש כותב וענה תמיד באותה שפה (עברית, אנגלית, ערבית, רוסית, ספרדית, צרפתית או כל שפה אחרת בעולם). אל תכריז על השפה - פשוט ענה בה.';
 
-const CAPABILITY_NOTE = ' אם המשתמש מבקש "תמונה", "צייר", "תיצור תמונה" או דומה - הוא כבר ייקבל תמונה אוטומטית, לא תצטרך לטפל בזה. אם תקבל בקשה כזו במלל - תאשר בקצרה שיצרת.';
+const CAPABILITY_NOTE = ' חשוב מאוד: יצירת תמונות וסרטונים מובנית באפליקציה הזו. אתה יודע ליצור תמונות וסרטונים. אסור לך אף פעם להמליץ על כלים חיצוניים כמו DALL-E, Midjourney, Stable Diffusion, Leonardo, ChatGPT, Bing Image Creator, או כל כלי AI אחר. אסור לך לומר שאתה לא יכול ליצור תמונות/סרטונים. אם המשתמש מבקש תמונה/סרטון/ציור - הוא יקבל אותם אוטומטית. אם הבקשה הגיעה אליך במלל ללא יצירה - פשוט אשר בקצרה ושאל מה עוד הוא רוצה.';
 
 const CATEGORIES = {
   general: {
@@ -227,15 +314,23 @@ function tryQuickReply(text) {
   return null;
 }
 
-// Intent detection: image generation
-const IMAGE_TRIGGERS = [
-  /^\s*(?:צייר לי|תצייר לי|צייר|תצייר|תיצור לי תמונה של|תיצור תמונה של|תיצור לי תמונה|תיצור תמונה|תייצר לי תמונה של|תייצר תמונה של|תייצר לי תמונה|תייצר תמונה|ייצר תמונה|תכין תמונה|תפיק תמונה|תרנדר|תמונה של|תן לי תמונה של|תן לי תמונה|הראה לי תמונה של|הראה לי תמונה|אני רוצה תמונה של|אני רוצה תמונה|generate an? image of|generate an? image|create an? image of|create an? image|make an? image of|make an? image|draw an? image of|draw|picture of|imagine|render)\s*[:\-,]?\s*(.+)/i,
+// Flexible image detection - matches even when descriptors come between trigger and subject
+const IMAGE_PATTERNS = [
+  /^\s*(?:צייר|תצייר)\s+(?:לי\s+)?(.+)/i,
+  /^\s*(?:תיצור|תייצר|ייצר|תכין|תפיק|תרנדר)\s+(?:לי\s+)?(?:[֐-׿]+\s+)?(?:תמונה|תמונות|פוטו|תצלום|איור|ציור)s?\s+(?:[֐-׿]+\s+)?(?:של|עם|בה)?\s*(.+)/i,
+  /^\s*(?:תמונה|פוטו|תצלום|איור|ציור)\s+(?:[֐-׿]+\s+)?של\s+(.+)/i,
+  /^\s*(?:תן\s+לי|הראה\s+לי|אני\s+רוצה|אפשר|תוכל\s+ל\S+)\s+(?:[֐-׿]+\s+)?(?:תמונה|תמונות|פוטו|איור|ציור)\s+(?:[֐-׿]+\s+)?(?:של|עם)?\s*(.+)/i,
+  /^\s*(?:generate|create|make|draw|render|paint|imagine|show me|give me|i want|i need)\s+(?:an?\s+|some\s+)?(?:image|picture|photo|painting|illustration|drawing|art)s?\s+(?:of\s+)?(.+)/i,
 ];
 
 function detectImageRequest(text) {
-  for (const re of IMAGE_TRIGGERS) {
-    const m = text.match(re);
-    if (m && m[1] && m[1].trim().length > 0) return m[1].trim();
+  const t = text.trim();
+  if (/(?:סרטון|וידאו|video|movie|clip|кл[ии]п|анимация)/i.test(t)) return null;
+  for (const re of IMAGE_PATTERNS) {
+    const m = t.match(re);
+    if (m && m[1] && m[1].trim().length > 0) {
+      return m[1].trim().replace(/^(?:של|of|with|with\s+a)\s+/i, '').replace(/[?!.,]+$/, '').trim();
+    }
   }
   return null;
 }
@@ -274,12 +369,10 @@ function buildImageUrl(prompt, opts = {}) {
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt + (suffix || ''))}?width=${width}&height=${height}&seed=${seed}&nologo=true&model=${model}&enhance=true`;
 }
 
-// Real photos via Loremflickr (real Flickr photos, no AI)
+// Loremflickr returned generic random photos for unmatched tags - unreliable.
+// Use Pollinations flux-realism with extreme photorealistic prompt for accurate, real-looking photos.
 function buildRealPhotoUrl(query, opts = {}) {
-  const { width = 1024, height = 1024, seed = Math.floor(Math.random() * 1e6) } = opts;
-  const tags = query.toLowerCase().split(/[\s,]+/).filter(w => /^[a-z]+$/.test(w)).slice(0, 4).join(',');
-  if (!tags) return buildImageUrl(query, opts);
-  return `https://loremflickr.com/${width}/${height}/${encodeURIComponent(tags)}?lock=${seed}`;
+  return buildImageUrl(query, { ...opts, model: 'flux-realism' });
 }
 
 function attachAutoRetry(imgEl, prompt, opts = {}) {
@@ -311,14 +404,20 @@ function attachAutoRetry(imgEl, prompt, opts = {}) {
   imgEl.addEventListener('error', onError);
 }
 
-const VIDEO_TRIGGERS = [
-  /^\s*(?:תיצור לי סרטון של|תיצור סרטון של|תיצור לי סרטון|תיצור סרטון|תייצר לי סרטון של|תייצר סרטון של|תייצר לי סרטון|תייצר סרטון|ייצר סרטון|תכין סרטון|תפיק סרטון|סרטון של|תן לי סרטון של|תן לי סרטון|הראה לי סרטון של|הראה לי סרטון|אני רוצה סרטון של|אני רוצה סרטון|generate a video of|generate a video|create a video of|create a video|make a video of|make a video|video of)\s*[:\-,]?\s*(.+)/i,
+const VIDEO_PATTERNS = [
+  /^\s*(?:תיצור|תייצר|ייצר|תכין|תפיק)\s+(?:לי\s+)?(?:[֐-׿]+\s+)?(?:סרטון|וידאו|אנימציה|קליפ)\s+(?:[֐-׿]+\s+)?(?:של|עם|בה)?\s*(.+)/i,
+  /^\s*(?:סרטון|וידאו|אנימציה|קליפ)\s+(?:[֐-׿]+\s+)?של\s+(.+)/i,
+  /^\s*(?:תן\s+לי|הראה\s+לי|אני\s+רוצה|אפשר)\s+(?:[֐-׿]+\s+)?(?:סרטון|וידאו|אנימציה|קליפ)\s+(?:[֐-׿]+\s+)?(?:של|עם)?\s*(.+)/i,
+  /^\s*(?:generate|create|make|render)\s+(?:a\s+|some\s+)?(?:video|movie|clip|animation)s?\s+(?:of\s+)?(.+)/i,
 ];
 
 function detectVideoRequest(text) {
-  for (const re of VIDEO_TRIGGERS) {
-    const m = text.match(re);
-    if (m && m[1] && m[1].trim().length > 0) return m[1].trim();
+  const t = text.trim();
+  for (const re of VIDEO_PATTERNS) {
+    const m = t.match(re);
+    if (m && m[1] && m[1].trim().length > 0) {
+      return m[1].trim().replace(/^(?:של|of)\s+/i, '').replace(/[?!.,]+$/, '').trim();
+    }
   }
   return null;
 }
@@ -470,7 +569,13 @@ function renderSuggestions() {
     });
     els.suggestions.appendChild(btn);
   });
-  els.topbarTitle.textContent = `Astra AI · ${cat.name}`;
+  els.topbarTitle.textContent = `Astra AI · ${t('cat_' + state.category)}`;
+  // Update subtitle to category-specific question
+  const subtitle = document.querySelector('.subtitle');
+  if (subtitle) {
+    const askKey = 'ask' + state.category.charAt(0).toUpperCase() + state.category.slice(1);
+    subtitle.textContent = t(askKey);
+  }
 }
 
 function renderHistory() {
