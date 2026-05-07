@@ -198,12 +198,23 @@ function detectKnowRequest(text) {
   return null;
 }
 
-const QUALITY_SUFFIX = ', highly detailed, masterpiece, professional photography, sharp focus, beautiful lighting, vibrant colors, 8k, ultra realistic';
-const VIDEO_QUALITY = ', cinematic, dramatic lighting, film still, ultra high detail, 8k';
+const QUALITY_SUFFIX = ', raw unedited photograph, real photo, candid documentary photography, hyperrealistic, photorealistic, taken with iphone 15 pro, natural lighting, real life, authentic, lifelike, depth of field, bokeh, 8k, professional, not AI, real photograph';
+const VIDEO_QUALITY = ', cinematic film still, real footage, photorealistic, professional cinematography, natural lighting, depth of field, 8k, hyperrealistic, real life';
+
+// Translate Hebrew/Arabic/Russian to English silently for better photo search
+async function translateToEnglish(text) {
+  if (!/[֐-׿؀-ۿЀ-ӿ]/.test(text)) return text;
+  try {
+    const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
+    if (!r.ok) return text;
+    const d = await r.json();
+    return d[0].map(x => x[0]).join(' ');
+  } catch { return text; }
+}
 
 // Auto-retry image loading - never shows an error to the user
 function buildImageUrl(prompt, opts = {}) {
-  const { width = 1024, height = 1024, seed = Math.floor(Math.random() * 1e6), model = 'flux', suffix = QUALITY_SUFFIX } = opts;
+  const { width = 1024, height = 1024, seed = Math.floor(Math.random() * 1e6), model = 'flux-realism', suffix = QUALITY_SUFFIX } = opts;
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt + (suffix || ''))}?width=${width}&height=${height}&seed=${seed}&nologo=true&model=${model}&enhance=true`;
 }
 
@@ -212,7 +223,7 @@ function attachAutoRetry(imgEl, prompt, opts = {}) {
   const width = opts.width || 1024;
   const height = opts.height || 1024;
   const suffix = opts.suffix !== undefined ? opts.suffix : QUALITY_SUFFIX;
-  const models = ['flux', 'turbo', 'flux', 'turbo', 'flux', 'turbo', 'flux-realism', 'flux', 'turbo', 'flux', 'turbo', 'flux'];
+  const models = ['flux-realism', 'flux', 'flux-realism', 'turbo', 'flux-realism', 'flux', 'turbo', 'flux-realism', 'flux', 'turbo', 'flux-realism', 'flux'];
   let retries = 0;
   let timer = null;
   const onError = () => {
@@ -826,10 +837,11 @@ async function sendMessage() {
     updateSendButton();
     const typingEl = addMessageDOM('bot', '', true);
     try {
+      const englishSubject = await translateToEnglish(knowSubject);
       const baseSeed = Math.floor(Math.random() * 1e6);
-      const variations = ['', ', close-up shot', ', wide cinematic angle', ', detailed photograph', ', minimal aesthetic', ', dramatic lighting'];
+      const variations = ['', ', close-up real photo', ', wide angle', ', candid shot', ', detail', ', different angle'];
       const images = variations.map((v, i) => ({
-        url: `https://image.pollinations.ai/prompt/${encodeURIComponent(knowSubject + v + QUALITY_SUFFIX)}?width=768&height=768&seed=${baseSeed + i * 13}&nologo=true&model=flux&enhance=true`,
+        url: `https://image.pollinations.ai/prompt/${encodeURIComponent(englishSubject + v + QUALITY_SUFFIX)}?width=768&height=768&seed=${baseSeed + i * 13}&nologo=true&model=flux-realism&enhance=true`,
         caption: knowSubject,
       }));
       const fakeConv = { ...conv, messages: [{ role: 'user', content: `הסבר בקצרה (3-4 משפטים) מה זה "${knowSubject}". ענה בעברית פשוטה וברורה.` }] };
@@ -856,30 +868,25 @@ async function sendMessage() {
     return;
   }
 
-  // Video generation intent (must come before image - "סרטון" is more specific)
+  // Video generation intent
   const videoPrompt = detectVideoRequest(text);
   if (videoPrompt) {
     state.loading = true;
     updateSendButton();
     const typingEl = addMessageDOM('bot', '', true);
     try {
-      await new Promise(r => setTimeout(r, 200));
+      const englishPrompt = await translateToEnglish(videoPrompt);
       const baseSeed = Math.floor(Math.random() * 1e6);
       const frames = [];
       for (let i = 0; i < 8; i++) {
-        frames.push(`https://image.pollinations.ai/prompt/${encodeURIComponent(videoPrompt + VIDEO_QUALITY + ', frame ' + (i+1) + ' of cinematic sequence')}?width=896&height=896&seed=${baseSeed + i * 11}&nologo=true&model=flux&enhance=true`);
+        frames.push(`https://image.pollinations.ai/prompt/${encodeURIComponent(englishPrompt + VIDEO_QUALITY + ', frame ' + (i+1))}?width=896&height=896&seed=${baseSeed + i * 11}&nologo=true&model=flux-realism&enhance=true`);
       }
       typingEl.remove();
       addVideoCardDOM(videoPrompt, frames);
-      const stored = `__VID__${JSON.stringify({ prompt: videoPrompt, frames })}`;
-      conv.messages.push({ role: 'assistant', content: stored });
+      conv.messages.push({ role: 'assistant', content: `__VID__${JSON.stringify({ prompt: videoPrompt, frames })}` });
       persist();
     } catch (err) {
       typingEl.remove();
-      const msg = `לא הצלחתי ליצור את הסרטון. נסה שוב 🔄`;
-      addMessageDOM('bot', msg);
-      conv.messages.push({ role: 'assistant', content: msg });
-      persist();
     } finally {
       state.loading = false;
       updateSendButton();
@@ -894,20 +901,15 @@ async function sendMessage() {
     updateSendButton();
     const typingEl = addMessageDOM('bot', '', true);
     try {
-      await new Promise(r => setTimeout(r, 200));
+      const englishPrompt = await translateToEnglish(imagePrompt);
       const seed = Math.floor(Math.random() * 1e6);
-      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt + QUALITY_SUFFIX)}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux&enhance=true`;
+      const url = buildImageUrl(englishPrompt, { seed, model: 'flux-realism' });
       typingEl.remove();
       addImageCardDOM(imagePrompt, url);
-      const stored = `__IMG__${JSON.stringify({ prompt: imagePrompt, url })}`;
-      conv.messages.push({ role: 'assistant', content: stored });
+      conv.messages.push({ role: 'assistant', content: `__IMG__${JSON.stringify({ prompt: imagePrompt, url })}` });
       persist();
     } catch (err) {
       typingEl.remove();
-      const msg = `לא הצלחתי ליצור את התמונה. נסה שוב 🔄`;
-      addMessageDOM('bot', msg);
-      conv.messages.push({ role: 'assistant', content: msg });
-      persist();
     } finally {
       state.loading = false;
       updateSendButton();
@@ -950,7 +952,7 @@ async function sendMessage() {
       addMessageDOM('bot', quick);
       conv.messages.push({ role: 'assistant', content: quick });
       persist();
-    }, 250);
+    }, 60);
     return;
   }
 
@@ -1118,6 +1120,40 @@ els.input.addEventListener('keydown', e => {
   }
 });
 els.sendBtn.addEventListener('click', sendMessage);
+
+// Voice input via Web Speech API
+const micBtn = document.getElementById('micBtn');
+if (micBtn) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    micBtn.style.display = 'none';
+  } else {
+    let recog = null;
+    let listening = false;
+    micBtn.addEventListener('click', () => {
+      if (listening) { recog && recog.stop(); return; }
+      recog = new SR();
+      recog.lang = 'he-IL';
+      recog.continuous = false;
+      recog.interimResults = true;
+      recog.onstart = () => { listening = true; micBtn.classList.add('active'); };
+      recog.onresult = (e) => {
+        let txt = '';
+        for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
+        els.input.value = txt;
+        autoResize();
+        updateSendButton();
+      };
+      recog.onerror = () => { listening = false; micBtn.classList.remove('active'); };
+      recog.onend = () => {
+        listening = false;
+        micBtn.classList.remove('active');
+        if (els.input.value.trim()) sendMessage();
+      };
+      recog.start();
+    });
+  }
+}
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !els.settingsModal.hidden) closeSettings();
 });
