@@ -1254,6 +1254,95 @@ els.input.addEventListener('keydown', e => {
 });
 els.sendBtn.addEventListener('click', sendMessage);
 
+// Continuous voice conversation mode (like ChatGPT voice)
+const voiceModeBtn = document.getElementById('voiceModeBtn');
+let voiceMode = false;
+let voiceRecog = null;
+
+function stopVoiceMode() {
+  voiceMode = false;
+  if (voiceModeBtn) voiceModeBtn.classList.remove('active');
+  if (voiceRecog) { try { voiceRecog.abort(); } catch {} voiceRecog = null; }
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  document.querySelectorAll('.speak-btn.active').forEach(b => b.classList.remove('active'));
+}
+
+function speakAndWait(text) {
+  return new Promise((resolve) => {
+    if (!('speechSynthesis' in window) || !text) return resolve();
+    const clean = text
+      .replace(/^__(IMG|VID|GRID)__.*$/s, '')
+      .replace(/[*_`#~]+/g, '')
+      .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .trim();
+    if (!clean) return resolve();
+    const u = new SpeechSynthesisUtterance(clean);
+    if (/[א-ת]/.test(clean)) u.lang = 'he-IL';
+    else if (/[ا-ي]/.test(clean)) u.lang = 'ar-SA';
+    else if (/[а-яА-Я]/.test(clean)) u.lang = 'ru-RU';
+    else u.lang = 'en-US';
+    u.rate = 1.0;
+    u.onend = resolve;
+    u.onerror = resolve;
+    speechSynthesis.speak(u);
+  });
+}
+
+function startVoiceListening() {
+  if (!voiceMode) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  try {
+    voiceRecog = new SR();
+    voiceRecog.lang = 'he-IL';
+    voiceRecog.continuous = false;
+    voiceRecog.interimResults = false;
+    voiceRecog.onresult = async (e) => {
+      const text = e.results[0][0].transcript.trim();
+      if (!text || !voiceMode) return;
+      els.input.value = text;
+      autoResize();
+      updateSendButton();
+      await sendMessage();
+      if (!voiceMode) return;
+      const conv = getActive();
+      const lastMsg = conv?.messages[conv.messages.length - 1];
+      if (lastMsg && lastMsg.role === 'assistant' && voiceMode) {
+        await speakAndWait(lastMsg.content);
+      }
+      if (voiceMode) setTimeout(startVoiceListening, 400);
+    };
+    voiceRecog.onerror = (e) => {
+      if (voiceMode && e.error !== 'aborted') setTimeout(startVoiceListening, 800);
+    };
+    voiceRecog.onend = () => { voiceRecog = null; };
+    voiceRecog.start();
+  } catch {
+    if (voiceMode) setTimeout(startVoiceListening, 800);
+  }
+}
+
+if (voiceModeBtn) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR || !('speechSynthesis' in window)) {
+    voiceModeBtn.style.display = 'none';
+  } else {
+    voiceModeBtn.addEventListener('click', async () => {
+      if (voiceMode) {
+        stopVoiceMode();
+        showToast('שיחה קולית הופסקה');
+      } else {
+        voiceMode = true;
+        voiceModeBtn.classList.add('active');
+        showToast('שיחה קולית פעילה - דבר! 🎙️');
+        await speakAndWait('שלום, אני מקשיב.');
+        if (voiceMode) startVoiceListening();
+      }
+    });
+  }
+}
+
 // Voice input via Web Speech API
 const micBtn = document.getElementById('micBtn');
 if (micBtn) {
