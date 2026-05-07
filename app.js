@@ -1364,12 +1364,27 @@ const voiceModeBtn = document.getElementById('voiceModeBtn');
 let voiceMode = false;
 let voiceRecog = null;
 
+function setVoiceState(s) {
+  const orb = document.getElementById('voiceOrb');
+  const status = document.getElementById('voiceStatus');
+  if (orb) {
+    orb.classList.remove('listening', 'thinking', 'speaking');
+    if (s) orb.classList.add(s);
+  }
+  if (status) {
+    const labels = { listening: 'מקשיב...', thinking: 'חושב...', speaking: 'מדבר...' };
+    status.textContent = labels[s] || 'דבר אליי';
+  }
+}
+
 function stopVoiceMode() {
   voiceMode = false;
   if (voiceModeBtn) voiceModeBtn.classList.remove('active');
   if (voiceRecog) { try { voiceRecog.abort(); } catch {} voiceRecog = null; }
   if (window.speechSynthesis) speechSynthesis.cancel();
   document.querySelectorAll('.speak-btn.active').forEach(b => b.classList.remove('active'));
+  const ov = document.getElementById('voiceOverlay');
+  if (ov) ov.hidden = true;
 }
 
 function speakAndWait(text) {
@@ -1396,6 +1411,7 @@ function speakAndWait(text) {
 
 function startVoiceListening() {
   if (!voiceMode) return;
+  setVoiceState('listening');
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) return;
   try {
@@ -1406,6 +1422,7 @@ function startVoiceListening() {
     voiceRecog.onresult = async (e) => {
       const text = e.results[0][0].transcript.trim();
       if (!text || !voiceMode) return;
+      setVoiceState('thinking');
       els.input.value = text;
       autoResize();
       updateSendButton();
@@ -1414,6 +1431,7 @@ function startVoiceListening() {
       const conv = getActive();
       const lastMsg = conv?.messages[conv.messages.length - 1];
       if (lastMsg && lastMsg.role === 'assistant' && voiceMode) {
+        setVoiceState('speaking');
         await speakAndWait(lastMsg.content);
       }
       if (voiceMode) setTimeout(startVoiceListening, 400);
@@ -1436,15 +1454,18 @@ if (voiceModeBtn) {
     voiceModeBtn.addEventListener('click', async () => {
       if (voiceMode) {
         stopVoiceMode();
-        showToast('שיחה קולית הופסקה');
       } else {
         voiceMode = true;
         voiceModeBtn.classList.add('active');
-        showToast('שיחה קולית פעילה - דבר! 🎙️');
+        const ov = document.getElementById('voiceOverlay');
+        if (ov) ov.hidden = false;
+        setVoiceState('speaking');
         await speakAndWait('שלום, אני מקשיב.');
         if (voiceMode) startVoiceListening();
       }
     });
+    const voiceExitBtn = document.getElementById('voiceExit');
+    if (voiceExitBtn) voiceExitBtn.addEventListener('click', stopVoiceMode);
   }
 }
 
