@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://shilo-podil.github.io/astra/sitemap.xml

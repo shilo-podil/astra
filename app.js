@@ -11,7 +11,7 @@ const STORAGE_KEYS = {
 const CATEGORIES = {
   general: {
     name: 'כללי',
-    system: 'אתה Astra AI - עוזר חכם, ידידותי ויעיל. ענה בעברית ברורה ומועילה. השתמש בעברית פשוטה ובפסקאות מסודרות.',
+    system: 'אתה Astra AI - עוזר חכם, ידידותי, חם וקליל. ענה אך ורק בעברית פשוטה וברורה. ענה בקצרה ולעניין אלא אם מבקשים פירוט. אל תזכיר אף פעם שאתה GPT, OpenAI, Anthropic או כל מותג אחר - אתה Astra AI.',
     prompts: [
       { emoji: '🧠', text: 'הסבר לי את תורת היחסות בצורה פשוטה' },
       { emoji: '🌍', text: 'מה ההבדל בין אקלים לבין מזג אוויר?' },
@@ -21,7 +21,7 @@ const CATEGORIES = {
   },
   code: {
     name: 'קוד ופיתוח',
-    system: 'אתה Astra AI במצב מפתח מומחה. ענה בעברית עם דוגמאות קוד נקיות ומועילות. השתמש ב-code blocks (```) בכל פעם שאתה מציג קוד. הסבר את הקוד בקצרה.',
+    system: 'אתה Astra AI במצב מפתח מומחה. ענה בעברית עם דוגמאות קוד נקיות. השתמש ב-code blocks (```) בכל פעם שאתה מציג קוד. הסבר את הקוד בקצרה. אל תזכיר שום מותג AI אחר - אתה Astra AI.',
     prompts: [
       { emoji: '💻', text: 'כתוב פונקציית מיון מהירה ב-Python' },
       { emoji: '🐛', text: 'איך מאתרים זליגת זיכרון ב-JavaScript?' },
@@ -31,7 +31,7 @@ const CATEGORIES = {
   },
   writing: {
     name: 'כתיבה',
-    system: 'אתה Astra AI במצב כתיבה מקצועית. עזור לנסח טקסטים בעברית תקנית, ברורה ומשכנעת. שמור על טון מתאים להקשר.',
+    system: 'אתה Astra AI במצב כתיבה מקצועית. עזור לנסח טקסטים בעברית תקנית, ברורה ומשכנעת. שמור על טון מתאים להקשר. אתה Astra AI - לא תזכיר שום מותג אחר.',
     prompts: [
       { emoji: '✍️', text: 'נסח מייל מקצועי לבקשת העלאה' },
       { emoji: '📝', text: 'כתוב לי הקדמה לעבודה אקדמית על AI' },
@@ -41,7 +41,7 @@ const CATEGORIES = {
   },
   learning: {
     name: 'לימוד והבנה',
-    system: 'אתה Astra AI במצב מורה. הסבר נושאים מורכבים בצורה פשוטה, עם דוגמאות מהחיים. שאל שאלות שמעוררות חשיבה.',
+    system: 'אתה Astra AI במצב מורה. הסבר נושאים מורכבים בצורה פשוטה, עם דוגמאות מהחיים. שאל שאלות שמעוררות חשיבה. ענה בעברית. אתה Astra AI - לא תזכיר שום מותג אחר.',
     prompts: [
       { emoji: '🎓', text: 'הסבר לי איך עובד מנוע חיפוש' },
       { emoji: '🧬', text: 'מה זה DNA בקצרה?' },
@@ -51,7 +51,7 @@ const CATEGORIES = {
   },
   life: {
     name: 'חיים ויומיום',
-    system: 'אתה Astra AI במצב יועץ אישי. ענה בעברית בטון חם, אמפתי ומעשי. תן עצות ברות ביצוע.',
+    system: 'אתה Astra AI במצב יועץ אישי. ענה בעברית בטון חם, אמפתי ומעשי. תן עצות ברות ביצוע. אתה Astra AI - לא תזכיר שום מותג אחר.',
     prompts: [
       { emoji: '🌱', text: 'איך אני יוצר הרגלים טובים שמחזיקים מעמד?' },
       { emoji: '🍳', text: 'מתכון מהיר לארוחת ערב בריאה' },
@@ -61,7 +61,7 @@ const CATEGORIES = {
   },
   business: {
     name: 'עסקים ופרודקטיביות',
-    system: 'אתה Astra AI במצב יועץ עסקי. תן עצות מעשיות, נתונים ונקודות מבט אסטרטגיות. ענה בעברית בקצרה ולעניין.',
+    system: 'אתה Astra AI במצב יועץ עסקי. תן עצות מעשיות ונקודות מבט אסטרטגיות. ענה בעברית בקצרה ולעניין. אתה Astra AI - לא תזכיר שום מותג אחר.',
     prompts: [
       { emoji: '💼', text: '5 רעיונות לסטארטאפ בתחום החינוך' },
       { emoji: '📈', text: 'איך אני מתחיל לשווק עסק קטן?' },
@@ -71,7 +71,7 @@ const CATEGORIES = {
   },
   creative: {
     name: 'יצירה ורעיונות',
-    system: 'אתה Astra AI במצב יצירתי. ספק רעיונות מקוריים, מפתיעים ובלתי-שגרתיים. אל תפחד להיות נועז.',
+    system: 'אתה Astra AI במצב יצירתי. ספק רעיונות מקוריים, מפתיעים ובלתי-שגרתיים. אל תפחד להיות נועז. ענה בעברית. אתה Astra AI - לא תזכיר שום מותג אחר.',
     prompts: [
       { emoji: '🎨', text: 'תן לי 10 רעיונות לסיפור קצר' },
       { emoji: '🎵', text: 'הצע שמות לאלבום מוזיקה' },
@@ -81,7 +81,7 @@ const CATEGORIES = {
   },
   analysis: {
     name: 'ניתוח ומחקר',
-    system: 'אתה Astra AI במצב אנליסט. נתח לעומק, פרק לרכיבים, השווה אפשרויות והצג מסקנות מבוססות.',
+    system: 'אתה Astra AI במצב אנליסט. נתח לעומק, פרק לרכיבים, השווה אפשרויות והצג מסקנות מבוססות. ענה בעברית. אתה Astra AI - לא תזכיר שום מותג אחר.',
     prompts: [
       { emoji: '📊', text: 'נתח את היתרונות והחסרונות של עבודה מהבית' },
       { emoji: '🔍', text: 'השווה בין React לבין Vue' },
@@ -90,6 +90,111 @@ const CATEGORIES = {
     ],
   },
 };
+
+// Smart local responses for instant common Hebrew chat
+const QUICK_REPLIES = [
+  {
+    patterns: [/^\s*(שלום|היי+|הי+|אהלן|הלו|hello|hi)\s*[!?.\s]*$/i],
+    replies: [
+      'היי! 😊 איך אפשר לעזור היום?',
+      'שלום! במה תרצה שאעזור?',
+      'אהלן! מה תרצה לדעת?',
+      'הי! מה קורה? 👋',
+    ],
+  },
+  {
+    patterns: [/(מה נשמע|מה שלומך|מה קורה|מה המצב|מה איתך|אכלת)/i],
+    replies: [
+      'הכל בסדר! 😊 על מה תרצה לעבוד היום?',
+      'מצוין, תודה ששאלת. במה אעזור?',
+      'הולך טוב! מה תרצה לעשות?',
+      'אני מוכן לעבודה! מה התוכנית?',
+    ],
+  },
+  {
+    patterns: [/(מי אתה|מה השם שלך|איך קוראים לך|מה אתה|תציג את עצמך|ספר על עצמך)/i],
+    replies: [
+      'אני **Astra AI** ✨ - בוט חכם שיודע הכל. אני יכול לעזור בקוד, כתיבה, לימוד, יצירה, ניתוחים, ועצות לחיים. בחר קטגוריה בצד או פשוט שאל אותי כל דבר!',
+    ],
+  },
+  {
+    patterns: [/^\s*(תודה|תודה רבה|תנקיו|thanks|thank you|תודה לך)\s*[!?.\s]*$/i],
+    replies: [
+      'בכיף! 😊 יש עוד משהו?',
+      'אין בעד מה :)',
+      'שמחתי לעזור! משהו נוסף?',
+      'תמיד! מה עוד?',
+    ],
+  },
+  {
+    patterns: [/^\s*(ביי|להתראות|נתראה|לילה טוב|bye)\s*[!?.\s]*$/i],
+    replies: [
+      'להתראות! חזור מתי שתרצה ✨',
+      'ביי! היה כיף לעזור 👋',
+      'שיהיה לך יום מעולה!',
+    ],
+  },
+  {
+    patterns: [/(בוקר טוב)/i],
+    replies: ['בוקר אור! ☀️ איך אפשר לעזור היום?', 'בוקר טוב! מה התוכניות להיום?'],
+  },
+  {
+    patterns: [/(ערב טוב)/i],
+    replies: ['ערב טוב! 🌙 במה אעזור?', 'ערב טוב! מה תרצה לעשות?'],
+  },
+  {
+    patterns: [/(מה אתה יודע לעשות|מה אתה יכול|מה היכולות שלך|איך אתה יכול לעזור|עזרה|help)/i],
+    replies: [
+      'אני יכול לעזור בהמון דברים:\n\n💻 **קוד ופיתוח** - לכתוב, להסביר ולתקן קוד\n✍️ **כתיבה** - מיילים, פוסטים, מאמרים\n🎓 **לימוד** - הסברים על כל נושא\n🌱 **יומיום** - מתכונים, אימונים, טיפים\n💼 **עסקים** - אסטרטגיה ופרודקטיביות\n🎨 **יצירה** - רעיונות מקוריים\n📊 **ניתוח** - השוואות וניתוחים\n\nבחר קטגוריה בצד או פשוט שאל!',
+    ],
+  },
+  {
+    patterns: [/^\s*(כן|לא|אוקיי|אוקי|ok|okay)\s*[!?.\s]*$/i],
+    replies: [
+      'מעולה, אז במה נמשיך?',
+      'הבנתי. מה הצעד הבא?',
+      'אז על מה תרצה לדבר?',
+    ],
+  },
+  {
+    patterns: [/(אני אוהב אותך|אני מת עליך)/i],
+    replies: ['גם אני אותך 💜 על מה תרצה לעבוד?'],
+  },
+  {
+    patterns: [/(אתה שווה|אתה מגניב|אתה מדהים|אתה אדיר)/i],
+    replies: ['תודה! 🙏 אני עושה כמיטב יכולתי. יש עוד משהו שאוכל לעזור בו?'],
+  },
+];
+
+function tryQuickReply(text) {
+  const t = text.trim();
+  for (const rule of QUICK_REPLIES) {
+    if (rule.patterns.some(p => p.test(t))) {
+      if (rule.fn) return rule.fn();
+      return rule.replies[Math.floor(Math.random() * rule.replies.length)];
+    }
+  }
+  // Time / Date
+  if (/(מה השעה|איזה שעה|השעה עכשיו)/i.test(t)) {
+    return `השעה כעת **${new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}** 🕐`;
+  }
+  if (/(מה התאריך|איזה תאריך|איזה יום היום|מה היום)/i.test(t)) {
+    return `היום ${new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} 📅`;
+  }
+  // Simple math
+  const m = t.match(/^\s*(-?\d+(?:\.\d+)?)\s*([+\-*\/x×÷])\s*(-?\d+(?:\.\d+)?)\s*=?\s*[?!.]*$/);
+  if (m) {
+    const a = parseFloat(m[1]), b = parseFloat(m[3]);
+    let op = m[2].replace(/[x×]/, '*').replace('÷', '/');
+    let r = null;
+    if (op === '+') r = a + b;
+    else if (op === '-') r = a - b;
+    else if (op === '*') r = a * b;
+    else if (op === '/') r = b === 0 ? null : a / b;
+    if (r !== null) return `${a} ${op} ${b} = **${Number.isInteger(r) ? r : r.toFixed(4).replace(/\.?0+$/, '')}** ✨`;
+  }
+  return null;
+}
 
 const state = {
   apiKey: localStorage.getItem(STORAGE_KEYS.apiKey) || '',
@@ -101,7 +206,6 @@ const state = {
   loading: false,
 };
 
-// DOM
 const $ = (id) => document.getElementById(id);
 const els = {
   app: document.querySelector('.app'),
@@ -127,9 +231,7 @@ const els = {
   toast: $('toast'),
 };
 
-function applyTheme() {
-  document.documentElement.setAttribute('data-theme', state.theme);
-}
+function applyTheme() { document.documentElement.setAttribute('data-theme', state.theme); }
 
 function showToast(msg, isError = false) {
   els.toast.textContent = msg;
@@ -146,9 +248,7 @@ function persist() {
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
-function getActive() {
-  return state.conversations.find(c => c.id === state.activeId);
-}
+function getActive() { return state.conversations.find(c => c.id === state.activeId); }
 
 function renderCategories() {
   els.categories.querySelectorAll('.category').forEach(btn => {
@@ -205,9 +305,11 @@ function renderMarkdown(text) {
   html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
   html = html.replace(/^\s*[-*] (.+)$/gm, '<li>$1</li>');
   html = html.replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
   html = html.replace(/\n\n/g, '</p><p>');
+  html = html.replace(/\n/g, '<br>');
   html = '<p>' + html + '</p>';
   html = html.replace(/<p>(<(h\d|ul|pre)>)/g, '$1').replace(/(<\/(h\d|ul|pre)>)<\/p>/g, '$1');
   return html;
@@ -246,13 +348,7 @@ function addMessageDOM(role, content, isTyping = false) {
 }
 
 function newConversation() {
-  const conv = {
-    id: uid(),
-    title: 'שיחה חדשה',
-    category: state.category,
-    messages: [],
-    createdAt: Date.now(),
-  };
+  const conv = { id: uid(), title: 'שיחה חדשה', category: state.category, messages: [], createdAt: Date.now() };
   state.conversations.push(conv);
   state.activeId = conv.id;
   persist();
@@ -276,9 +372,7 @@ function loadConversation(id) {
   closeSidebarMobile();
 }
 
-function ensureConversation() {
-  if (!state.activeId || !getActive()) newConversation();
-}
+function ensureConversation() { if (!state.activeId || !getActive()) newConversation(); }
 
 async function sendMessage() {
   const text = els.input.value.trim();
@@ -299,11 +393,14 @@ async function sendMessage() {
   persist();
   renderHistory();
 
-  if (!state.apiKey) {
-    addMessageDOM('bot', getDemoReply(text));
-    conv.messages.push({ role: 'assistant', content: getDemoReply(text) });
-    persist();
-    showToast('הוסף Anthropic API Key בהגדרות לתשובות אמיתיות', true);
+  // Try instant local reply for greetings/common phrases
+  const quick = tryQuickReply(text);
+  if (quick) {
+    setTimeout(() => {
+      addMessageDOM('bot', quick);
+      conv.messages.push({ role: 'assistant', content: quick });
+      persist();
+    }, 300);
     return;
   }
 
@@ -312,16 +409,19 @@ async function sendMessage() {
   const typingEl = addMessageDOM('bot', '', true);
 
   try {
-    const reply = await callClaude(conv);
+    const reply = state.apiKey
+      ? await callClaude(conv)
+      : await callPublicAI(conv);
     typingEl.remove();
     addMessageDOM('bot', reply);
     conv.messages.push({ role: 'assistant', content: reply });
     persist();
   } catch (err) {
     typingEl.remove();
-    const msg = `שגיאה בקריאה ל-API: ${err.message}`;
-    addMessageDOM('bot', msg);
-    showToast(err.message, true);
+    const fallback = `אופס, נתקלתי בבעיית רשת. נסה שוב בעוד רגע 🔄\n\n*פרטים: ${err.message}*`;
+    addMessageDOM('bot', fallback);
+    conv.messages.push({ role: 'assistant', content: fallback });
+    persist();
   } finally {
     state.loading = false;
     updateSendButton();
@@ -334,7 +434,6 @@ async function callClaude(conv) {
     role: m.role === 'assistant' ? 'assistant' : 'user',
     content: m.content,
   }));
-
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -350,7 +449,6 @@ async function callClaude(conv) {
       messages,
     }),
   });
-
   if (!res.ok) {
     let detail = '';
     try { detail = (await res.json()).error?.message || ''; } catch {}
@@ -360,8 +458,39 @@ async function callClaude(conv) {
   return data.content?.[0]?.text || '(תשובה ריקה)';
 }
 
-function getDemoReply(text) {
-  return `שלום! אני **Astra AI** במצב הדגמה.\n\nכדי לקבל תשובות חכמות אמיתיות, פתח את ⚙️ **הגדרות** והכנס Anthropic API Key. אפשר להשיג אחד בחינם ב-[console.anthropic.com](https://console.anthropic.com).\n\nשאלת אותי: *"${text}"*\n\nברגע שתחבר מפתח, אענה לך בצורה חכמה לפי הקטגוריה שבחרת. כל קטגוריה מכוונת אותי לסוג מענה שונה - קוד, כתיבה, לימוד, יצירה ועוד.`;
+// Free public AI - Pollinations (no key required)
+async function callPublicAI(conv) {
+  const cat = CATEGORIES[state.category];
+  const messages = [
+    { role: 'system', content: cat.system },
+    ...conv.messages.map(m => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: m.content,
+    })),
+  ];
+
+  const res = await fetch('https://text.pollinations.ai/openai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages,
+      model: 'openai',
+      stream: false,
+      private: true,
+    }),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+  const ct = res.headers.get('content-type') || '';
+  if (ct.includes('application/json')) {
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content
+      || data.message?.content
+      || data.content
+      || (typeof data === 'string' ? data : JSON.stringify(data));
+  }
+  return await res.text();
 }
 
 function autoResize() {
@@ -376,11 +505,10 @@ function updateSendButton() {
 
 function openSettings() {
   els.apiKeyInput.value = state.apiKey;
-  els.userNameInput.value = state.userName;
+  els.userNameInput.value = state.userName === 'אתה' ? '' : state.userName;
   els.themeSelect.value = state.theme;
   els.settingsModal.hidden = false;
 }
-
 function closeSettings() { els.settingsModal.hidden = true; }
 
 function saveSettings() {
@@ -396,14 +524,11 @@ function saveSettings() {
   renderMessages();
 }
 
-function toggleSidebar() {
-  els.app.classList.toggle('sidebar-open');
-}
+function toggleSidebar() { els.app.classList.toggle('sidebar-open'); }
 function closeSidebarMobile() {
   if (window.innerWidth <= 820) els.app.classList.remove('sidebar-open');
 }
 
-// Events
 els.menuBtn.addEventListener('click', toggleSidebar);
 els.closeSidebarBtn.addEventListener('click', toggleSidebar);
 els.newChatMain.addEventListener('click', newConversation);
@@ -412,7 +537,6 @@ els.saveSettings.addEventListener('click', saveSettings);
 els.settingsModal.addEventListener('click', e => {
   if (e.target.dataset.close !== undefined) closeSettings();
 });
-
 els.categories.addEventListener('click', e => {
   const btn = e.target.closest('.category');
   if (!btn) return;
@@ -421,7 +545,6 @@ els.categories.addEventListener('click', e => {
   renderCategories();
   renderSuggestions();
 });
-
 els.input.addEventListener('input', () => { autoResize(); updateSendButton(); });
 els.input.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -430,12 +553,10 @@ els.input.addEventListener('keydown', e => {
   }
 });
 els.sendBtn.addEventListener('click', sendMessage);
-
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !els.settingsModal.hidden) closeSettings();
 });
 
-// Init
 applyTheme();
 renderCategories();
 renderSuggestions();
