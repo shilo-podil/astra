@@ -8,20 +8,24 @@ const STORAGE_KEYS = {
   category: 'astra_category',
 };
 
+const LANG_INSTRUCTION = ' חשוב: זהה אוטומטית את השפה שבה המשתמש כותב וענה תמיד באותה שפה (עברית, אנגלית, ערבית, רוסית, ספרדית, צרפתית או כל שפה אחרת בעולם). אל תכריז על השפה - פשוט ענה בה.';
+
+const CAPABILITY_NOTE = ' אם המשתמש מבקש "תמונה", "צייר", "תיצור תמונה" או דומה - הוא כבר ייקבל תמונה אוטומטית, לא תצטרך לטפל בזה. אם תקבל בקשה כזו במלל - תאשר בקצרה שיצרת.';
+
 const CATEGORIES = {
   general: {
     name: 'כללי',
-    system: 'אתה Astra AI - עוזר חכם, ידידותי, חם וקליל. ענה אך ורק בעברית פשוטה וברורה. ענה בקצרה ולעניין אלא אם מבקשים פירוט. אל תזכיר אף פעם שאתה GPT, OpenAI, Anthropic או כל מותג אחר - אתה Astra AI.',
+    system: 'אתה Astra AI - עוזר חכם, ידידותי, חם וקליל. ענה בקצרה ולעניין אלא אם מבקשים פירוט. אל תזכיר אף פעם שאתה GPT, OpenAI, Anthropic או כל מותג אחר - אתה Astra AI.' + LANG_INSTRUCTION + CAPABILITY_NOTE,
     prompts: [
-      { emoji: '🧠', text: 'הסבר לי את תורת היחסות בצורה פשוטה' },
-      { emoji: '🌍', text: 'מה ההבדל בין אקלים לבין מזג אוויר?' },
+      { emoji: '🎨', text: 'צייר לי חתול אסטרונאוט במשקפיים' },
+      { emoji: '🧠', text: 'תן לי חידון על תורת היחסות' },
       { emoji: '💡', text: 'תן לי טיפ מפתיע לחיים שלא ידעתי' },
-      { emoji: '❓', text: 'למה השמיים כחולים?' },
+      { emoji: '🌍', text: 'תרגם "שלום עולם" ל-10 שפות' },
     ],
   },
   code: {
     name: 'קוד ופיתוח',
-    system: 'אתה Astra AI במצב מפתח מומחה. ענה בעברית עם דוגמאות קוד נקיות. השתמש ב-code blocks (```) בכל פעם שאתה מציג קוד. הסבר את הקוד בקצרה. אל תזכיר שום מותג AI אחר - אתה Astra AI.',
+    system: 'אתה Astra AI במצב מפתח מומחה. ענה עם דוגמאות קוד נקיות. השתמש ב-code blocks (```) בכל פעם שאתה מציג קוד. הסבר את הקוד בקצרה. אל תזכיר שום מותג AI אחר - אתה Astra AI.' + LANG_INSTRUCTION,
     prompts: [
       { emoji: '💻', text: 'כתוב פונקציית מיון מהירה ב-Python' },
       { emoji: '🐛', text: 'איך מאתרים זליגת זיכרון ב-JavaScript?' },
@@ -31,29 +35,29 @@ const CATEGORIES = {
   },
   writing: {
     name: 'כתיבה',
-    system: 'אתה Astra AI במצב כתיבה מקצועית. עזור לנסח טקסטים בעברית תקנית, ברורה ומשכנעת. שמור על טון מתאים להקשר. אתה Astra AI - לא תזכיר שום מותג אחר.',
+    system: 'אתה Astra AI במצב כתיבה מקצועית. עזור לנסח טקסטים ברורים ומשכנעים. שמור על טון מתאים להקשר. אתה Astra AI - לא תזכיר שום מותג אחר.' + LANG_INSTRUCTION,
     prompts: [
       { emoji: '✍️', text: 'נסח מייל מקצועי לבקשת העלאה' },
-      { emoji: '📝', text: 'כתוב לי הקדמה לעבודה אקדמית על AI' },
-      { emoji: '📣', text: 'נסח פוסט לינקדאין על קידום בעבודה' },
+      { emoji: '📝', text: 'כתוב הקדמה לעבודה אקדמית על AI' },
+      { emoji: '📣', text: 'נסח פוסט לינקדאין על קידום' },
       { emoji: '💌', text: 'כתוב הודעת תודה למרצה' },
     ],
   },
   learning: {
     name: 'לימוד והבנה',
-    system: 'אתה Astra AI במצב מורה. הסבר נושאים מורכבים בצורה פשוטה, עם דוגמאות מהחיים. שאל שאלות שמעוררות חשיבה. ענה בעברית. אתה Astra AI - לא תזכיר שום מותג אחר.',
+    system: 'אתה Astra AI במצב מורה. הסבר נושאים מורכבים בצורה פשוטה, עם דוגמאות מהחיים. שאל שאלות שמעוררות חשיבה. אתה Astra AI - לא תזכיר שום מותג אחר.' + LANG_INSTRUCTION,
     prompts: [
       { emoji: '🎓', text: 'הסבר לי איך עובד מנוע חיפוש' },
       { emoji: '🧬', text: 'מה זה DNA בקצרה?' },
-      { emoji: '📚', text: 'תן לי 5 דרכים לזכור חומר טוב יותר' },
-      { emoji: '🌌', text: 'הסבר את החור השחור לילד בן 10' },
+      { emoji: '📚', text: '5 דרכים לזכור חומר טוב יותר' },
+      { emoji: '🌌', text: 'הסבר חור שחור לילד בן 10' },
     ],
   },
   life: {
     name: 'חיים ויומיום',
-    system: 'אתה Astra AI במצב יועץ אישי. ענה בעברית בטון חם, אמפתי ומעשי. תן עצות ברות ביצוע. אתה Astra AI - לא תזכיר שום מותג אחר.',
+    system: 'אתה Astra AI במצב יועץ אישי. ענה בטון חם, אמפתי ומעשי. תן עצות ברות ביצוע. אתה Astra AI.' + LANG_INSTRUCTION,
     prompts: [
-      { emoji: '🌱', text: 'איך אני יוצר הרגלים טובים שמחזיקים מעמד?' },
+      { emoji: '🌱', text: 'איך יוצרים הרגלים שמחזיקים מעמד?' },
       { emoji: '🍳', text: 'מתכון מהיר לארוחת ערב בריאה' },
       { emoji: '😴', text: 'איך לישון טוב יותר בלילה?' },
       { emoji: '💪', text: 'אימון בית 15 דקות בלי ציוד' },
@@ -61,29 +65,29 @@ const CATEGORIES = {
   },
   business: {
     name: 'עסקים ופרודקטיביות',
-    system: 'אתה Astra AI במצב יועץ עסקי. תן עצות מעשיות ונקודות מבט אסטרטגיות. ענה בעברית בקצרה ולעניין. אתה Astra AI - לא תזכיר שום מותג אחר.',
+    system: 'אתה Astra AI במצב יועץ עסקי. תן עצות מעשיות ונקודות מבט אסטרטגיות. אתה Astra AI.' + LANG_INSTRUCTION,
     prompts: [
       { emoji: '💼', text: '5 רעיונות לסטארטאפ בתחום החינוך' },
-      { emoji: '📈', text: 'איך אני מתחיל לשווק עסק קטן?' },
+      { emoji: '📈', text: 'איך מתחילים לשווק עסק קטן?' },
       { emoji: '⏰', text: 'שיטות לניהול זמן יעיל' },
       { emoji: '💰', text: 'איך לבנות תקציב חודשי חכם?' },
     ],
   },
   creative: {
     name: 'יצירה ורעיונות',
-    system: 'אתה Astra AI במצב יצירתי. ספק רעיונות מקוריים, מפתיעים ובלתי-שגרתיים. אל תפחד להיות נועז. ענה בעברית. אתה Astra AI - לא תזכיר שום מותג אחר.',
+    system: 'אתה Astra AI במצב יצירתי. ספק רעיונות מקוריים ומפתיעים. אל תפחד להיות נועז. אתה Astra AI.' + LANG_INSTRUCTION,
     prompts: [
-      { emoji: '🎨', text: 'תן לי 10 רעיונות לסיפור קצר' },
+      { emoji: '🎨', text: 'צייר נוף עתידני עם רכבות מעופפות' },
       { emoji: '🎵', text: 'הצע שמות לאלבום מוזיקה' },
       { emoji: '🎬', text: 'רעיון לסרט קצר ב-3 דקות' },
-      { emoji: '🦄', text: 'תן לי משהו מטורף ומקורי לעשות היום' },
+      { emoji: '🦄', text: 'משהו מטורף ומקורי לעשות היום' },
     ],
   },
   analysis: {
     name: 'ניתוח ומחקר',
-    system: 'אתה Astra AI במצב אנליסט. נתח לעומק, פרק לרכיבים, השווה אפשרויות והצג מסקנות מבוססות. ענה בעברית. אתה Astra AI - לא תזכיר שום מותג אחר.',
+    system: 'אתה Astra AI במצב אנליסט. נתח לעומק, פרק לרכיבים, השווה אפשרויות. אתה Astra AI.' + LANG_INSTRUCTION,
     prompts: [
-      { emoji: '📊', text: 'נתח את היתרונות והחסרונות של עבודה מהבית' },
+      { emoji: '📊', text: 'נתח יתרונות וחסרונות של עבודה מהבית' },
       { emoji: '🔍', text: 'השווה בין React לבין Vue' },
       { emoji: '⚖️', text: 'יתרונות וחסרונות של רכב חשמלי' },
       { emoji: '🧩', text: 'נתח את הסיכונים של AI לחברה' },
@@ -91,10 +95,9 @@ const CATEGORIES = {
   },
 };
 
-// Smart local responses for instant common Hebrew chat
 const QUICK_REPLIES = [
   {
-    patterns: [/^\s*(שלום|היי+|הי+|אהלן|הלו|hello|hi)\s*[!?.\s]*$/i],
+    patterns: [/^\s*(שלום|היי+|הי+|אהלן|הלו|hello|hi|hey|привет|hola|bonjour|مرحبا)\s*[!?.\s]*$/i],
     replies: [
       'היי! 😊 איך אפשר לעזור היום?',
       'שלום! במה תרצה שאעזור?',
@@ -103,7 +106,7 @@ const QUICK_REPLIES = [
     ],
   },
   {
-    patterns: [/(מה נשמע|מה שלומך|מה קורה|מה המצב|מה איתך|אכלת)/i],
+    patterns: [/(מה נשמע|מה שלומך|מה קורה|מה המצב|מה איתך|how are you)/i],
     replies: [
       'הכל בסדר! 😊 על מה תרצה לעבוד היום?',
       'מצוין, תודה ששאלת. במה אעזור?',
@@ -112,57 +115,32 @@ const QUICK_REPLIES = [
     ],
   },
   {
-    patterns: [/(מי אתה|מה השם שלך|איך קוראים לך|מה אתה|תציג את עצמך|ספר על עצמך)/i],
+    patterns: [/(מי אתה|מה השם שלך|איך קוראים לך|מה אתה|תציג את עצמך|ספר על עצמך|who are you|what are you)/i],
     replies: [
-      'אני **Astra AI** ✨ - בוט חכם שיודע הכל. אני יכול לעזור בקוד, כתיבה, לימוד, יצירה, ניתוחים, ועצות לחיים. בחר קטגוריה בצד או פשוט שאל אותי כל דבר!',
+      'אני **Astra AI** ✨\n\nאני יודע לעשות הרבה דברים:\n🎨 ליצור תמונות (פשוט תכתוב "צייר לי...")\n🧠 לעשות חידונים\n💻 לכתוב ולהסביר קוד\n✍️ לכתוב טקסטים ומיילים\n🎓 ללמד נושאים מורכבים\n🌍 לתרגם בין כל השפות\n📊 לנתח, להשוות, לסכם\n\nשאל אותי כל דבר!',
     ],
   },
   {
-    patterns: [/^\s*(תודה|תודה רבה|תנקיו|thanks|thank you|תודה לך)\s*[!?.\s]*$/i],
+    patterns: [/^\s*(תודה|תודה רבה|תנקיו|thanks|thank you|תודה לך|שכויאח|gracias|merci|спасибо)\s*[!?.\s]*$/i],
+    replies: ['בכיף! 😊 יש עוד משהו?', 'אין בעד מה :)', 'שמחתי לעזור! משהו נוסף?'],
+  },
+  {
+    patterns: [/^\s*(ביי|להתראות|נתראה|לילה טוב|bye|goodbye|adios)\s*[!?.\s]*$/i],
+    replies: ['להתראות! חזור מתי שתרצה ✨', 'ביי! היה כיף לעזור 👋'],
+  },
+  {
+    patterns: [/(בוקר טוב|good morning)/i],
+    replies: ['בוקר אור! ☀️ איך אפשר לעזור?', 'בוקר טוב! מה התוכניות להיום?'],
+  },
+  {
+    patterns: [/(ערב טוב|good evening)/i],
+    replies: ['ערב טוב! 🌙 במה אעזור?'],
+  },
+  {
+    patterns: [/(מה אתה יודע לעשות|מה אתה יכול|מה היכולות שלך|איך אתה יכול לעזור|^\s*עזרה\s*$|what can you do)/i],
     replies: [
-      'בכיף! 😊 יש עוד משהו?',
-      'אין בעד מה :)',
-      'שמחתי לעזור! משהו נוסף?',
-      'תמיד! מה עוד?',
+      'אני יודע לעשות המון:\n\n🎨 **תמונות** - "צייר לי חתול במשקפיים"\n🧠 **חידונים** - "תן לי חידון על מתמטיקה"\n💻 **קוד** - לכתוב, להסביר, לתקן\n✍️ **כתיבה** - מיילים, מאמרים, פוסטים\n🎓 **לימוד** - הסברים על כל נושא\n🌍 **תרגום** - בין כל השפות בעולם\n📊 **ניתוח והשוואה**\n🌱 **טיפים לחיים**\n\nפשוט תכתוב מה שאתה רוצה!',
     ],
-  },
-  {
-    patterns: [/^\s*(ביי|להתראות|נתראה|לילה טוב|bye)\s*[!?.\s]*$/i],
-    replies: [
-      'להתראות! חזור מתי שתרצה ✨',
-      'ביי! היה כיף לעזור 👋',
-      'שיהיה לך יום מעולה!',
-    ],
-  },
-  {
-    patterns: [/(בוקר טוב)/i],
-    replies: ['בוקר אור! ☀️ איך אפשר לעזור היום?', 'בוקר טוב! מה התוכניות להיום?'],
-  },
-  {
-    patterns: [/(ערב טוב)/i],
-    replies: ['ערב טוב! 🌙 במה אעזור?', 'ערב טוב! מה תרצה לעשות?'],
-  },
-  {
-    patterns: [/(מה אתה יודע לעשות|מה אתה יכול|מה היכולות שלך|איך אתה יכול לעזור|עזרה|help)/i],
-    replies: [
-      'אני יכול לעזור בהמון דברים:\n\n💻 **קוד ופיתוח** - לכתוב, להסביר ולתקן קוד\n✍️ **כתיבה** - מיילים, פוסטים, מאמרים\n🎓 **לימוד** - הסברים על כל נושא\n🌱 **יומיום** - מתכונים, אימונים, טיפים\n💼 **עסקים** - אסטרטגיה ופרודקטיביות\n🎨 **יצירה** - רעיונות מקוריים\n📊 **ניתוח** - השוואות וניתוחים\n\nבחר קטגוריה בצד או פשוט שאל!',
-    ],
-  },
-  {
-    patterns: [/^\s*(כן|לא|אוקיי|אוקי|ok|okay)\s*[!?.\s]*$/i],
-    replies: [
-      'מעולה, אז במה נמשיך?',
-      'הבנתי. מה הצעד הבא?',
-      'אז על מה תרצה לדבר?',
-    ],
-  },
-  {
-    patterns: [/(אני אוהב אותך|אני מת עליך)/i],
-    replies: ['גם אני אותך 💜 על מה תרצה לעבוד?'],
-  },
-  {
-    patterns: [/(אתה שווה|אתה מגניב|אתה מדהים|אתה אדיר)/i],
-    replies: ['תודה! 🙏 אני עושה כמיטב יכולתי. יש עוד משהו שאוכל לעזור בו?'],
   },
 ];
 
@@ -170,18 +148,15 @@ function tryQuickReply(text) {
   const t = text.trim();
   for (const rule of QUICK_REPLIES) {
     if (rule.patterns.some(p => p.test(t))) {
-      if (rule.fn) return rule.fn();
       return rule.replies[Math.floor(Math.random() * rule.replies.length)];
     }
   }
-  // Time / Date
-  if (/(מה השעה|איזה שעה|השעה עכשיו)/i.test(t)) {
+  if (/(מה השעה|איזה שעה|השעה עכשיו|what time)/i.test(t)) {
     return `השעה כעת **${new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}** 🕐`;
   }
-  if (/(מה התאריך|איזה תאריך|איזה יום היום|מה היום)/i.test(t)) {
+  if (/(מה התאריך|איזה תאריך|איזה יום היום|^\s*מה היום|what.*date|what day)/i.test(t)) {
     return `היום ${new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} 📅`;
   }
-  // Simple math
   const m = t.match(/^\s*(-?\d+(?:\.\d+)?)\s*([+\-*\/x×÷])\s*(-?\d+(?:\.\d+)?)\s*=?\s*[?!.]*$/);
   if (m) {
     const a = parseFloat(m[1]), b = parseFloat(m[3]);
@@ -192,6 +167,32 @@ function tryQuickReply(text) {
     else if (op === '*') r = a * b;
     else if (op === '/') r = b === 0 ? null : a / b;
     if (r !== null) return `${a} ${op} ${b} = **${Number.isInteger(r) ? r : r.toFixed(4).replace(/\.?0+$/, '')}** ✨`;
+  }
+  return null;
+}
+
+// Intent detection: image generation
+const IMAGE_TRIGGERS = [
+  /^\s*(צייר לי|צייר|תצייר|תיצור תמונה|תייצר תמונה|תמונה של|תן לי תמונה|הראה לי תמונה|generate an? image of|create an? image of|draw|make an? image of|picture of|imagine)\s+(.+)/i,
+];
+
+function detectImageRequest(text) {
+  for (const re of IMAGE_TRIGGERS) {
+    const m = text.match(re);
+    if (m) return m[m.length - 1].trim();
+  }
+  return null;
+}
+
+const QUIZ_TRIGGERS = [
+  /^\s*(תן לי חידון|עשה לי חידון|תעשה חידון|חידון על|חידון של|תכין לי חידון|quiz me about|make a quiz about|create a quiz on)\s+(.+)/i,
+  /^\s*(תן לי חידון|עשה לי חידון|חידון|quiz|make a quiz)\s*[!?.]*\s*$/i,
+];
+
+function detectQuizRequest(text) {
+  for (const re of QUIZ_TRIGGERS) {
+    const m = text.match(re);
+    if (m) return (m[2] || '').trim() || null;
   }
   return null;
 }
@@ -305,14 +306,38 @@ function renderMarkdown(text) {
   html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="msg-image" loading="lazy" />');
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
   html = html.replace(/^\s*[-*] (.+)$/gm, '<li>$1</li>');
   html = html.replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
   html = html.replace(/\n\n/g, '</p><p>');
   html = html.replace(/\n/g, '<br>');
   html = '<p>' + html + '</p>';
-  html = html.replace(/<p>(<(h\d|ul|pre)>)/g, '$1').replace(/(<\/(h\d|ul|pre)>)<\/p>/g, '$1');
+  html = html.replace(/<p>(<(h\d|ul|pre|img)>)/g, '$1').replace(/(<\/(h\d|ul|pre)>)<\/p>/g, '$1');
   return html;
+}
+
+function speak(text, btn) {
+  if (!('speechSynthesis' in window)) return;
+  if (speechSynthesis.speaking) {
+    speechSynthesis.cancel();
+    document.querySelectorAll('.speak-btn.active').forEach(b => b.classList.remove('active'));
+    return;
+  }
+  const clean = text.replace(/[*_`#~]+/g, '').replace(/\!\[[^\]]*\]\([^)]+\)/g, '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  const u = new SpeechSynthesisUtterance(clean);
+  // Detect language roughly
+  if (/[א-ת]/.test(clean)) u.lang = 'he-IL';
+  else if (/[ا-ي]/.test(clean)) u.lang = 'ar-SA';
+  else if (/[а-яА-Я]/.test(clean)) u.lang = 'ru-RU';
+  else u.lang = 'en-US';
+  u.rate = 1.0;
+  if (btn) {
+    btn.classList.add('active');
+    u.onend = () => btn.classList.remove('active');
+    u.onerror = () => btn.classList.remove('active');
+  }
+  speechSynthesis.speak(u);
 }
 
 function renderMessages() {
@@ -332,9 +357,22 @@ function addMessageDOM(role, content, isTyping = false) {
   div.className = `msg ${role}`;
   const avatar = role === 'user' ? (state.userName[0] || 'A').toUpperCase() : 'A';
   const name = role === 'user' ? state.userName : 'Astra';
-  const body = isTyping
-    ? '<div class="typing"><span></span><span></span><span></span></div>'
-    : `<div class="msg-content">${renderMarkdown(content)}</div>`;
+  let body;
+  if (isTyping) {
+    body = '<div class="typing"><span></span><span></span><span></span></div>';
+  } else {
+    const actions = role === 'bot'
+      ? `<div class="msg-actions">
+          <button class="msg-action speak-btn" title="הקראה" data-act="speak">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          </button>
+          <button class="msg-action" title="העתק" data-act="copy">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>`
+      : '';
+    body = `<div class="msg-content">${renderMarkdown(content)}</div>${actions}`;
+  }
   div.innerHTML = `
     <div class="msg-avatar">${escapeHtml(avatar)}</div>
     <div class="msg-body">
@@ -342,6 +380,14 @@ function addMessageDOM(role, content, isTyping = false) {
       ${body}
     </div>
   `;
+  if (role === 'bot' && !isTyping) {
+    const speakBtn = div.querySelector('[data-act="speak"]');
+    const copyBtn = div.querySelector('[data-act="copy"]');
+    speakBtn?.addEventListener('click', () => speak(content, speakBtn));
+    copyBtn?.addEventListener('click', () => {
+      navigator.clipboard.writeText(content).then(() => showToast('הועתק ✓'));
+    });
+  }
   els.messages.appendChild(div);
   els.chat.scrollTop = els.chat.scrollHeight;
   return div;
@@ -393,32 +439,85 @@ async function sendMessage() {
   persist();
   renderHistory();
 
-  // Try instant local reply for greetings/common phrases
+  // Image generation intent
+  const imagePrompt = detectImageRequest(text);
+  if (imagePrompt) {
+    state.loading = true;
+    updateSendButton();
+    const typingEl = addMessageDOM('bot', '🎨 מייצר תמונה...', true);
+    try {
+      const seed = Math.floor(Math.random() * 1e6);
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true`;
+      const reply = `הנה התמונה: **${imagePrompt}**\n\n![${imagePrompt}](${url})`;
+      typingEl.remove();
+      addMessageDOM('bot', reply);
+      conv.messages.push({ role: 'assistant', content: reply });
+      persist();
+    } catch (err) {
+      typingEl.remove();
+      const msg = `לא הצלחתי ליצור את התמונה. נסה שוב 🔄`;
+      addMessageDOM('bot', msg);
+      conv.messages.push({ role: 'assistant', content: msg });
+      persist();
+    } finally {
+      state.loading = false;
+      updateSendButton();
+    }
+    return;
+  }
+
+  // Quiz intent
+  const quizTopic = detectQuizRequest(text);
+  if (quizTopic !== null) {
+    state.loading = true;
+    updateSendButton();
+    const typingEl = addMessageDOM('bot', '', true);
+    try {
+      const topic = quizTopic || 'נושא כללי מעניין';
+      const quizPrompt = `צור חידון של 5 שאלות אמריקאיות על הנושא: "${topic}". פורמט נדרש (markdown):\n\n## 🧠 חידון: ${topic}\n\n**1. שאלה כאן?**\n- א) אופציה 1\n- ב) אופציה 2\n- ג) אופציה 3\n- ד) אופציה 4\n\n... וכך הלאה.\n\nבסוף, הוסף "<details><summary>📝 לחץ לתשובות</summary>\n\n1. ב\n2. ד\n... etc\n</details>"\n\nענה בעברית, מעניין ומאתגר אך הוגן.`;
+      const fakeConv = { ...conv, messages: [{ role: 'user', content: quizPrompt }] };
+      const reply = state.apiKey ? await callClaude(fakeConv) : await callPublicAI(fakeConv);
+      typingEl.remove();
+      addMessageDOM('bot', reply);
+      conv.messages.push({ role: 'assistant', content: reply });
+      persist();
+    } catch (err) {
+      typingEl.remove();
+      const msg = `לא הצלחתי ליצור חידון כרגע. נסה שוב 🔄`;
+      addMessageDOM('bot', msg);
+      conv.messages.push({ role: 'assistant', content: msg });
+      persist();
+    } finally {
+      state.loading = false;
+      updateSendButton();
+    }
+    return;
+  }
+
+  // Quick local replies
   const quick = tryQuickReply(text);
   if (quick) {
     setTimeout(() => {
       addMessageDOM('bot', quick);
       conv.messages.push({ role: 'assistant', content: quick });
       persist();
-    }, 300);
+    }, 250);
     return;
   }
 
+  // AI call
   state.loading = true;
   updateSendButton();
   const typingEl = addMessageDOM('bot', '', true);
-
   try {
-    const reply = state.apiKey
-      ? await callClaude(conv)
-      : await callPublicAI(conv);
+    const reply = state.apiKey ? await callClaude(conv) : await callPublicAI(conv);
     typingEl.remove();
     addMessageDOM('bot', reply);
     conv.messages.push({ role: 'assistant', content: reply });
     persist();
   } catch (err) {
     typingEl.remove();
-    const fallback = `אופס, נתקלתי בבעיית רשת. נסה שוב בעוד רגע 🔄\n\n*פרטים: ${err.message}*`;
+    const fallback = `אופס, נתקלתי בבעיית רשת. נסה שוב בעוד רגע 🔄`;
     addMessageDOM('bot', fallback);
     conv.messages.push({ role: 'assistant', content: fallback });
     persist();
@@ -458,7 +557,6 @@ async function callClaude(conv) {
   return data.content?.[0]?.text || '(תשובה ריקה)';
 }
 
-// Free public AI - Pollinations (no key required)
 async function callPublicAI(conv) {
   const cat = CATEGORIES[state.category];
   const messages = [
@@ -468,20 +566,12 @@ async function callPublicAI(conv) {
       content: m.content,
     })),
   ];
-
   const res = await fetch('https://text.pollinations.ai/openai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      messages,
-      model: 'openai',
-      stream: false,
-      private: true,
-    }),
+    body: JSON.stringify({ messages, model: 'openai', stream: false, private: true }),
   });
-
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
   const ct = res.headers.get('content-type') || '';
   if (ct.includes('application/json')) {
     const data = await res.json();
