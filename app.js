@@ -6,7 +6,63 @@ const STORAGE_KEYS = {
   conversations: 'astra_conversations',
   activeId: 'astra_active_id',
   category: 'astra_category',
+  lang: 'astra_lang',
+  visited: 'astra_visited',
 };
+
+const LANGUAGES = [
+  { code: 'he', name: 'עברית', text: 'מאת אלון דה בר' },
+  { code: 'en', name: 'English', text: 'by Alon Debeer' },
+  { code: 'es', name: 'Español', text: 'por Alon Debeer' },
+  { code: 'ar', name: 'العربية', text: 'بقلم آلون دي بير' },
+  { code: 'ru', name: 'Русский', text: 'Алон Де Бер' },
+  { code: 'fr', name: 'Français', text: 'par Alon Debeer' },
+  { code: 'de', name: 'Deutsch', text: 'von Alon Debeer' },
+  { code: 'zh-CN', name: '简体中文', text: '作者：阿隆·德比尔' },
+  { code: 'zh-TW', name: '繁體中文', text: '作者：阿隆·德比爾' },
+  { code: 'ja', name: '日本語', text: 'アロン・デ・ビアによる' },
+  { code: 'ko', name: '한국어', text: '알론 디비어 작' },
+  { code: 'it', name: 'Italiano', text: 'di Alon Debeer' },
+  { code: 'pt', name: 'Português', text: 'por Alon Debeer' },
+  { code: 'nl', name: 'Nederlands', text: 'door Alon Debeer' },
+  { code: 'tr', name: 'Türkçe', text: 'Alon Debeer tarafından' },
+  { code: 'pl', name: 'Polski', text: 'autor: Alon Debeer' },
+  { code: 'sv', name: 'Svenska', text: 'av Alon Debeer' },
+  { code: 'el', name: 'Ελληνικά', text: 'από τον Alon Debeer' },
+  { code: 'hi', name: 'हिन्दी', text: 'एलन डेबीयर द्वारा' },
+  { code: 'th', name: 'ไทย', text: 'โดย Alon Debeer' },
+  { code: 'vi', name: 'Tiếng Việt', text: 'bởi Alon Debeer' },
+  { code: 'id', name: 'Indonesia', text: 'oleh Alon Debeer' },
+  { code: 'cs', name: 'Čeština', text: 'od Alona Debeera' },
+  { code: 'ro', name: 'Română', text: 'de Alon Debeer' },
+  { code: 'hu', name: 'Magyar', text: 'Alon Debeer által' },
+  { code: 'uk', name: 'Українська', text: 'Алон Де Бер' },
+  { code: 'bg', name: 'Български', text: 'от Alon Debeer' },
+  { code: 'da', name: 'Dansk', text: 'af Alon Debeer' },
+  { code: 'fi', name: 'Suomi', text: 'kirjoittanut Alon Debeer' },
+  { code: 'no', name: 'Norsk', text: 'av Alon Debeer' },
+  { code: 'sk', name: 'Slovenčina', text: 'od Alona Debeera' },
+  { code: 'hr', name: 'Hrvatski', text: 'Alon Debeer' },
+  { code: 'sr', name: 'Српски', text: 'Алон Дебер' },
+  { code: 'lt', name: 'Lietuvių', text: 'Alon Debeer' },
+  { code: 'lv', name: 'Latviešu', text: 'Alon Debeer' },
+  { code: 'et', name: 'Eesti', text: 'Alon Debeer' },
+  { code: 'sl', name: 'Slovenščina', text: 'Alon Debeer' },
+  { code: 'tl', name: 'Tagalog', text: 'ni Alon Debeer' },
+  { code: 'bn', name: 'বাংলা', text: 'এলন ডেবিয়ার দ্বারা' },
+  { code: 'ur', name: 'اردو', text: 'از طرف ایلون ڈیبیر' },
+  { code: 'fa', name: 'فارسی', text: 'توسط آلون دی بیر' },
+  { code: 'ms', name: 'Melayu', text: 'oleh Alon Debeer' },
+  { code: 'ta', name: 'தமிழ்', text: 'அலன் டெபீர் மூலம்' },
+  { code: 'te', name: 'తెలుగు', text: 'అలాన్ డెబీర్ చే' },
+  { code: 'mr', name: 'मराठी', text: 'अॅलन डेबियर द्वारे' },
+  { code: 'gu', name: 'ગુજરાતી', text: 'એલન ડેબીયર દ્વારા' },
+  { code: 'pa', name: 'ਪੰਜਾਬੀ', text: 'ਏਲਨ ਡੇਬੀਅਰ ਦੁਆਰਾ' },
+  { code: 'mn', name: 'Монгол', text: 'Алон Дебеер' },
+  { code: 'mk', name: 'Македонски', text: 'од Алон Дебер' },
+  { code: 'sq', name: 'Shqip', text: 'nga Alon Debeer' },
+  { code: 'ka', name: 'ქართული', text: 'ალონ დიბერი' },
+];
 
 const LANG_INSTRUCTION = ' חשוב: זהה אוטומטית את השפה שבה המשתמש כותב וענה תמיד באותה שפה (עברית, אנגלית, ערבית, רוסית, ספרדית, צרפתית או כל שפה אחרת בעולם). אל תכריז על השפה - פשוט ענה בה.';
 
@@ -218,26 +274,39 @@ function buildImageUrl(prompt, opts = {}) {
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt + (suffix || ''))}?width=${width}&height=${height}&seed=${seed}&nologo=true&model=${model}&enhance=true`;
 }
 
+// Real photos via Loremflickr (real Flickr photos, no AI)
+function buildRealPhotoUrl(query, opts = {}) {
+  const { width = 1024, height = 1024, seed = Math.floor(Math.random() * 1e6) } = opts;
+  const tags = query.toLowerCase().split(/[\s,]+/).filter(w => /^[a-z]+$/.test(w)).slice(0, 4).join(',');
+  if (!tags) return buildImageUrl(query, opts);
+  return `https://loremflickr.com/${width}/${height}/${encodeURIComponent(tags)}?lock=${seed}`;
+}
+
 function attachAutoRetry(imgEl, prompt, opts = {}) {
   const maxRetries = opts.maxRetries || 12;
   const width = opts.width || 1024;
   const height = opts.height || 1024;
   const suffix = opts.suffix !== undefined ? opts.suffix : QUALITY_SUFFIX;
-  const models = ['flux-realism', 'flux', 'flux-realism', 'turbo', 'flux-realism', 'flux', 'turbo', 'flux-realism', 'flux', 'turbo', 'flux-realism', 'flux'];
+  // Strategy: real photos first, AI photorealism as fallback
+  const strategies = ['flickr', 'flickr', 'flickr', 'ai-realism', 'ai-realism', 'ai-flux', 'ai-turbo', 'flickr', 'ai-realism', 'ai-flux', 'ai-turbo', 'ai-realism'];
   let retries = 0;
-  let timer = null;
   const onError = () => {
     if (retries >= maxRetries) {
-      // Last resort: keep trying every 5 sec quietly without UI noise
-      timer = setTimeout(onError, 5000);
+      setTimeout(onError, 5000);
       retries = 0;
       return;
     }
     retries++;
     const newSeed = Math.floor(Math.random() * 1e6);
-    const newModel = models[retries % models.length];
-    const url = buildImageUrl(prompt, { width, height, seed: newSeed, model: newModel, suffix });
-    setTimeout(() => { imgEl.src = url; }, 600);
+    const strategy = strategies[retries % strategies.length];
+    let url;
+    if (strategy === 'flickr') {
+      url = buildRealPhotoUrl(prompt, { width, height, seed: newSeed });
+    } else {
+      const model = strategy === 'ai-flux' ? 'flux' : strategy === 'ai-turbo' ? 'turbo' : 'flux-realism';
+      url = buildImageUrl(prompt, { width, height, seed: newSeed, model, suffix });
+    }
+    setTimeout(() => { imgEl.src = url; }, 400);
   };
   imgEl.addEventListener('error', onError);
 }
@@ -272,10 +341,69 @@ const state = {
   userName: localStorage.getItem(STORAGE_KEYS.userName) || 'אתה',
   theme: localStorage.getItem(STORAGE_KEYS.theme) || 'dark',
   category: localStorage.getItem(STORAGE_KEYS.category) || 'general',
+  lang: localStorage.getItem(STORAGE_KEYS.lang) || 'he',
   conversations: JSON.parse(localStorage.getItem(STORAGE_KEYS.conversations) || '[]'),
   activeId: localStorage.getItem(STORAGE_KEYS.activeId) || null,
   loading: false,
 };
+
+function getAuthorText(code) {
+  const lang = LANGUAGES.find(l => l.code === code) || LANGUAGES[0];
+  return lang.text;
+}
+
+function showSplash() {
+  const splash = document.getElementById('splash');
+  if (!splash) return;
+  const sub = document.getElementById('splashSub');
+  if (sub) sub.textContent = getAuthorText(state.lang);
+  splash.classList.add('visible');
+  setTimeout(() => splash.classList.add('fading'), 1800);
+  setTimeout(() => { splash.style.display = 'none'; }, 3200);
+}
+
+function populateLangSelect() {
+  const sel = document.getElementById('langSelect');
+  if (!sel || sel.options.length) return;
+  LANGUAGES.forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l.code;
+    opt.textContent = l.name;
+    sel.appendChild(opt);
+  });
+  sel.value = state.lang;
+}
+
+function showTutorialIfFirstVisit() {
+  if (localStorage.getItem(STORAGE_KEYS.visited)) return;
+  setTimeout(() => {
+    const overlay = document.createElement('div');
+    overlay.className = 'tutorial';
+    overlay.innerHTML = `
+      <div class="tutorial-card">
+        <div class="tut-emoji">✨</div>
+        <h2>ברוך הבא ל-Astra AI</h2>
+        <p>אני יכול:</p>
+        <ul class="tut-list">
+          <li>🎨 <b>ליצור תמונות</b> אמיתיות - "תיצור תמונה של כדורגל"</li>
+          <li>🎬 <b>ליצור סרטונים</b> - "תיצור סרטון של גלים"</li>
+          <li>🔍 <b>להראות לך מה זה X</b> - "אתה יודע מה זה quasar?"</li>
+          <li>🧠 <b>חידונים</b> - "תן לי חידון על מתמטיקה"</li>
+          <li>💻 <b>קוד, תרגום, כתיבה</b> ועוד הרבה</li>
+          <li>🎤 <b>הקלטה קולית</b> - לחץ על המיקרופון</li>
+          <li>🖱️ <b>קליק ימני על שיחה</b> - מחיקה / עריכה / המשך</li>
+          <li>📱 <b>התקנה כאפליקציה</b> - כפתור למטה משמאל</li>
+        </ul>
+        <button class="btn-primary tut-close">בוא נתחיל</button>
+      </div>
+    `;
+    overlay.querySelector('.tut-close').addEventListener('click', () => {
+      overlay.remove();
+      localStorage.setItem(STORAGE_KEYS.visited, '1');
+    });
+    document.body.appendChild(overlay);
+  }, 3300);
+}
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -839,9 +967,8 @@ async function sendMessage() {
     try {
       const englishSubject = await translateToEnglish(knowSubject);
       const baseSeed = Math.floor(Math.random() * 1e6);
-      const variations = ['', ', close-up real photo', ', wide angle', ', candid shot', ', detail', ', different angle'];
-      const images = variations.map((v, i) => ({
-        url: `https://image.pollinations.ai/prompt/${encodeURIComponent(englishSubject + v + QUALITY_SUFFIX)}?width=768&height=768&seed=${baseSeed + i * 13}&nologo=true&model=flux-realism&enhance=true`,
+      const images = Array.from({ length: 6 }, (_, i) => ({
+        url: buildRealPhotoUrl(englishSubject, { width: 768, height: 768, seed: baseSeed + i * 13 }),
         caption: knowSubject,
       }));
       const fakeConv = { ...conv, messages: [{ role: 'user', content: `הסבר בקצרה (3-4 משפטים) מה זה "${knowSubject}". ענה בעברית פשוטה וברורה.` }] };
@@ -879,7 +1006,7 @@ async function sendMessage() {
       const baseSeed = Math.floor(Math.random() * 1e6);
       const frames = [];
       for (let i = 0; i < 8; i++) {
-        frames.push(`https://image.pollinations.ai/prompt/${encodeURIComponent(englishPrompt + VIDEO_QUALITY + ', frame ' + (i+1))}?width=896&height=896&seed=${baseSeed + i * 11}&nologo=true&model=flux-realism&enhance=true`);
+        frames.push(buildRealPhotoUrl(englishPrompt, { width: 896, height: 896, seed: baseSeed + i * 11 }));
       }
       typingEl.remove();
       addVideoCardDOM(videoPrompt, frames);
@@ -903,7 +1030,7 @@ async function sendMessage() {
     try {
       const englishPrompt = await translateToEnglish(imagePrompt);
       const seed = Math.floor(Math.random() * 1e6);
-      const url = buildImageUrl(englishPrompt, { seed, model: 'flux-realism' });
+      const url = buildRealPhotoUrl(englishPrompt, { seed });
       typingEl.remove();
       addImageCardDOM(imagePrompt, url);
       conv.messages.push({ role: 'assistant', content: `__IMG__${JSON.stringify({ prompt: imagePrompt, url })}` });
@@ -1074,6 +1201,9 @@ function openSettings() {
   els.apiKeyInput.value = state.apiKey;
   els.userNameInput.value = state.userName === 'אתה' ? '' : state.userName;
   els.themeSelect.value = state.theme;
+  populateLangSelect();
+  const ls = document.getElementById('langSelect');
+  if (ls) ls.value = state.lang;
   els.settingsModal.hidden = false;
 }
 function closeSettings() { els.settingsModal.hidden = true; }
@@ -1082,9 +1212,12 @@ function saveSettings() {
   state.apiKey = els.apiKeyInput.value.trim();
   state.userName = els.userNameInput.value.trim() || 'אתה';
   state.theme = els.themeSelect.value;
+  const ls = document.getElementById('langSelect');
+  if (ls && ls.value) state.lang = ls.value;
   localStorage.setItem(STORAGE_KEYS.apiKey, state.apiKey);
   localStorage.setItem(STORAGE_KEYS.userName, state.userName);
   localStorage.setItem(STORAGE_KEYS.theme, state.theme);
+  localStorage.setItem(STORAGE_KEYS.lang, state.lang);
   applyTheme();
   closeSettings();
   showToast('ההגדרות נשמרו ✓');
@@ -1172,3 +1305,5 @@ renderSuggestions();
 renderHistory();
 renderMessages();
 updateSendButton();
+showSplash();
+showTutorialIfFirstVisit();

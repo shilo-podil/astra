@@ -47,6 +47,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 <body>
+  <div id="splash" class="splash">
+    <div class="splash-inner">
+      <div class="splash-title"><span class="grad">Astra AI</span></div>
+      <div class="splash-sub" id="splashSub">מאת אלון דה בר</div>
+    </div>
+  </div>
+
   <div class="app">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
@@ -179,6 +186,12 @@
             <option value="dark">כהה</option>
             <option value="light">בהיר</option>
           </select>
+        </label>
+
+        <label class="field">
+          <span>שפת ההתחלה (כיתוב הפותח)</span>
+          <select id="langSelect"></select>
+          <small>השפה בה מוצג "מאת אלון דה בר" במסך הפתיחה.</small>
         </label>
 
         <div class="modal-actions">
