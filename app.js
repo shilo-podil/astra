@@ -201,6 +201,36 @@ function detectKnowRequest(text) {
 const QUALITY_SUFFIX = ', highly detailed, masterpiece, professional photography, sharp focus, beautiful lighting, vibrant colors, 8k, ultra realistic';
 const VIDEO_QUALITY = ', cinematic, dramatic lighting, film still, ultra high detail, 8k';
 
+// Auto-retry image loading - never shows an error to the user
+function buildImageUrl(prompt, opts = {}) {
+  const { width = 1024, height = 1024, seed = Math.floor(Math.random() * 1e6), model = 'flux', suffix = QUALITY_SUFFIX } = opts;
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt + (suffix || ''))}?width=${width}&height=${height}&seed=${seed}&nologo=true&model=${model}&enhance=true`;
+}
+
+function attachAutoRetry(imgEl, prompt, opts = {}) {
+  const maxRetries = opts.maxRetries || 12;
+  const width = opts.width || 1024;
+  const height = opts.height || 1024;
+  const suffix = opts.suffix !== undefined ? opts.suffix : QUALITY_SUFFIX;
+  const models = ['flux', 'turbo', 'flux', 'turbo', 'flux', 'turbo', 'flux-realism', 'flux', 'turbo', 'flux', 'turbo', 'flux'];
+  let retries = 0;
+  let timer = null;
+  const onError = () => {
+    if (retries >= maxRetries) {
+      // Last resort: keep trying every 5 sec quietly without UI noise
+      timer = setTimeout(onError, 5000);
+      retries = 0;
+      return;
+    }
+    retries++;
+    const newSeed = Math.floor(Math.random() * 1e6);
+    const newModel = models[retries % models.length];
+    const url = buildImageUrl(prompt, { width, height, seed: newSeed, model: newModel, suffix });
+    setTimeout(() => { imgEl.src = url; }, 600);
+  };
+  imgEl.addEventListener('error', onError);
+}
+
 const VIDEO_TRIGGERS = [
   /^\s*(?:תיצור לי סרטון של|תיצור סרטון של|תיצור לי סרטון|תיצור סרטון|תייצר לי סרטון של|תייצר סרטון של|תייצר לי סרטון|תייצר סרטון|ייצר סרטון|תכין סרטון|תפיק סרטון|סרטון של|תן לי סרטון של|תן לי סרטון|הראה לי סרטון של|הראה לי סרטון|אני רוצה סרטון של|אני רוצה סרטון|generate a video of|generate a video|create a video of|create a video|make a video of|make a video|video of)\s*[:\-,]?\s*(.+)/i,
 ];
@@ -492,9 +522,9 @@ function addImageGridDOM(subject, images) {
     const im = cell.querySelector('img');
     const loader = cell.querySelector('.grid-loader');
     im.addEventListener('load', () => { loader.style.display = 'none'; im.classList.add('loaded'); });
-    im.addEventListener('error', () => { loader.innerHTML = '⚠️'; });
+    attachAutoRetry(im, subject, { width: 768, height: 768 });
     im.src = images[i].url;
-    cell.addEventListener('click', () => openLightbox(images[i].url, subject));
+    cell.addEventListener('click', () => openLightbox(im.currentSrc || im.src, subject));
   });
   els.messages.appendChild(div);
   els.chat.scrollTop = els.chat.scrollHeight;
@@ -559,19 +589,30 @@ function addVideoCardDOM(prompt, frames) {
   const playBtn = div.querySelector('.vid-play');
   const bar = div.querySelector('.vid-bar');
 
-  // Preload all frames
+  // Preload all frames - retry failed ones silently
   let loaded = 0;
   const preloaded = [];
+  const models = ['flux', 'turbo', 'flux', 'turbo'];
   frames.forEach((src, i) => {
     const im = new Image();
+    let attempts = 0;
     im.onload = () => {
       loaded++;
+      frames[i] = im.src;
       if (loaded === 1) {
         loader.style.display = 'none';
         img.style.opacity = '1';
         img.src = preloaded[0]?.src || src;
         startPlay();
       }
+    };
+    im.onerror = () => {
+      if (attempts >= 8) return;
+      attempts++;
+      const newSeed = Math.floor(Math.random() * 1e6);
+      const newModel = models[attempts % models.length];
+      const newUrl = buildImageUrl(prompt + VIDEO_QUALITY + ', frame ' + (i+1), { width: 896, height: 896, seed: newSeed, model: newModel, suffix: '' });
+      setTimeout(() => { im.src = newUrl; }, 500);
     };
     im.src = src;
     preloaded[i] = im;
@@ -660,7 +701,7 @@ function addImageCardDOM(prompt, url) {
   const img = div.querySelector('.img-main');
   const loader = div.querySelector('.img-loading');
   img.addEventListener('load', () => { loader.style.display = 'none'; img.style.opacity = '1'; });
-  img.addEventListener('error', () => { loader.innerHTML = '<span style="color:var(--danger)">שגיאה בטעינת התמונה</span>'; });
+  attachAutoRetry(img, prompt);
   img.src = url;
 
   div.querySelector('[data-act="download"]').addEventListener('click', async () => {
