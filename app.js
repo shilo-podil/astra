@@ -173,13 +173,13 @@ function tryQuickReply(text) {
 
 // Intent detection: image generation
 const IMAGE_TRIGGERS = [
-  /^\s*(צייר לי|צייר|תצייר|תיצור תמונה|תייצר תמונה|תמונה של|תן לי תמונה|הראה לי תמונה|generate an? image of|create an? image of|draw|make an? image of|picture of|imagine)\s+(.+)/i,
+  /^\s*(?:צייר לי|תצייר לי|צייר|תצייר|תיצור לי תמונה של|תיצור תמונה של|תיצור לי תמונה|תיצור תמונה|תייצר לי תמונה של|תייצר תמונה של|תייצר לי תמונה|תייצר תמונה|ייצר תמונה|תכין תמונה|תפיק תמונה|תרנדר|תמונה של|תן לי תמונה של|תן לי תמונה|הראה לי תמונה של|הראה לי תמונה|אני רוצה תמונה של|אני רוצה תמונה|generate an? image of|generate an? image|create an? image of|create an? image|make an? image of|make an? image|draw an? image of|draw|picture of|imagine|render)\s*[:\-,]?\s*(.+)/i,
 ];
 
 function detectImageRequest(text) {
   for (const re of IMAGE_TRIGGERS) {
     const m = text.match(re);
-    if (m) return m[m.length - 1].trim();
+    if (m && m[1] && m[1].trim().length > 0) return m[1].trim();
   }
   return null;
 }
@@ -348,7 +348,82 @@ function renderMessages() {
     return;
   }
   els.welcome.classList.add('hidden');
-  conv.messages.forEach(m => addMessageDOM(m.role, m.content));
+  conv.messages.forEach(m => {
+    if (m.role === 'assistant' && m.content.startsWith('__IMG__')) {
+      try {
+        const data = JSON.parse(m.content.slice(7));
+        addImageCardDOM(data.prompt, data.url);
+        return;
+      } catch {}
+    }
+    addMessageDOM(m.role, m.content);
+  });
+}
+
+function addImageCardDOM(prompt, url) {
+  els.welcome.classList.add('hidden');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `
+    <div class="msg-avatar">A</div>
+    <div class="msg-body">
+      <div class="msg-name">Astra</div>
+      <div class="img-card">
+        <div class="img-wrap">
+          <div class="img-loading"><div class="spinner"></div><span>מייצר תמונה...</span></div>
+          <img class="img-main" alt="${escapeHtml(prompt)}" loading="lazy" />
+        </div>
+        <div class="img-footer">
+          <div class="img-prompt" title="${escapeHtml(prompt)}">🎨 ${escapeHtml(prompt)}</div>
+          <div class="img-actions">
+            <button class="img-btn" data-act="regen" title="צור מחדש">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            </button>
+            <button class="img-btn" data-act="download" title="הורדה">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <button class="img-btn" data-act="open" title="פתח בחלון חדש">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </button>
+            <button class="img-btn" data-act="copy" title="העתק קישור">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  const img = div.querySelector('.img-main');
+  const loader = div.querySelector('.img-loading');
+  img.addEventListener('load', () => { loader.style.display = 'none'; img.style.opacity = '1'; });
+  img.addEventListener('error', () => { loader.innerHTML = '<span style="color:var(--danger)">שגיאה בטעינת התמונה</span>'; });
+  img.src = url;
+
+  div.querySelector('[data-act="download"]').addEventListener('click', async () => {
+    try {
+      const r = await fetch(url);
+      const blob = await r.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `astra-${Date.now()}.jpg`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch { window.open(url, '_blank'); }
+  });
+  div.querySelector('[data-act="open"]').addEventListener('click', () => window.open(url, '_blank'));
+  div.querySelector('[data-act="copy"]').addEventListener('click', () => {
+    navigator.clipboard.writeText(url).then(() => showToast('הקישור הועתק ✓'));
+  });
+  div.querySelector('[data-act="regen"]').addEventListener('click', () => {
+    els.input.value = `צייר ${prompt}`;
+    autoResize();
+    updateSendButton();
+    sendMessage();
+  });
+
+  els.messages.appendChild(div);
+  els.chat.scrollTop = els.chat.scrollHeight;
+  return div;
 }
 
 function addMessageDOM(role, content, isTyping = false) {
@@ -444,14 +519,15 @@ async function sendMessage() {
   if (imagePrompt) {
     state.loading = true;
     updateSendButton();
-    const typingEl = addMessageDOM('bot', '🎨 מייצר תמונה...', true);
+    const typingEl = addMessageDOM('bot', '', true);
     try {
+      await new Promise(r => setTimeout(r, 200));
       const seed = Math.floor(Math.random() * 1e6);
-      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true`;
-      const reply = `הנה התמונה: **${imagePrompt}**\n\n![${imagePrompt}](${url})`;
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux&enhance=true`;
       typingEl.remove();
-      addMessageDOM('bot', reply);
-      conv.messages.push({ role: 'assistant', content: reply });
+      addImageCardDOM(imagePrompt, url);
+      const stored = `__IMG__${JSON.stringify({ prompt: imagePrompt, url })}`;
+      conv.messages.push({ role: 'assistant', content: stored });
       persist();
     } catch (err) {
       typingEl.remove();
@@ -569,7 +645,7 @@ async function callPublicAI(conv) {
   const res = await fetch('https://text.pollinations.ai/openai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages, model: 'openai', stream: false, private: true }),
+    body: JSON.stringify({ messages, model: 'openai-large', stream: false, private: true }),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const ct = res.headers.get('content-type') || '';
