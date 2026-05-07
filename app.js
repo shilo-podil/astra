@@ -184,6 +184,23 @@ function detectImageRequest(text) {
   return null;
 }
 
+const KNOW_TRIGGERS = [
+  /^\s*(?:אתה יודע מה זה|אתה יודע מי זה|אתה יודע מי|אתה מכיר את|תכיר לי את|תראה לי איך נראה|תראה לי תמונה של|מה זה |מי זה |איך נראה |do you know what (?:is |a |an )?|show me what .* looks like|what does .* look like|what is a? )\s*(.+)/i,
+];
+
+function detectKnowRequest(text) {
+  for (const re of KNOW_TRIGGERS) {
+    const m = text.match(re);
+    if (m && m[1] && m[1].trim().length > 1) {
+      return m[1].trim().replace(/[?!.]+$/, '').trim();
+    }
+  }
+  return null;
+}
+
+const QUALITY_SUFFIX = ', highly detailed, masterpiece, professional photography, sharp focus, beautiful lighting, vibrant colors, 8k, ultra realistic';
+const VIDEO_QUALITY = ', cinematic, dramatic lighting, film still, ultra high detail, 8k';
+
 const VIDEO_TRIGGERS = [
   /^\s*(?:תיצור לי סרטון של|תיצור סרטון של|תיצור לי סרטון|תיצור סרטון|תייצר לי סרטון של|תייצר סרטון של|תייצר לי סרטון|תייצר סרטון|ייצר סרטון|תכין סרטון|תפיק סרטון|סרטון של|תן לי סרטון של|תן לי סרטון|הראה לי סרטון של|הראה לי סרטון|אני רוצה סרטון של|אני רוצה סרטון|generate a video of|generate a video|create a video of|create a video|make a video of|make a video|video of)\s*[:\-,]?\s*(.+)/i,
 ];
@@ -639,6 +656,39 @@ async function sendMessage() {
   persist();
   renderHistory();
 
+  // "What is X" / "Do you know X" intent - show image + explanation
+  const knowSubject = detectKnowRequest(text);
+  if (knowSubject && !detectVideoRequest(text) && !detectImageRequest(text)) {
+    state.loading = true;
+    updateSendButton();
+    const typingEl = addMessageDOM('bot', '', true);
+    try {
+      const seed = Math.floor(Math.random() * 1e6);
+      const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(knowSubject + QUALITY_SUFFIX)}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux&enhance=true`;
+      const fakeConv = { ...conv, messages: [{ role: 'user', content: `הסבר בקצרה (3-5 משפטים) מה זה "${knowSubject}". ענה בעברית פשוטה וברורה.` }] };
+      let explanation = '';
+      try {
+        explanation = state.apiKey ? await callClaude(fakeConv) : await callPublicAI(fakeConv);
+      } catch { explanation = `**${knowSubject}** - הנה איך זה נראה:`; }
+      typingEl.remove();
+      addMessageDOM('bot', explanation);
+      addImageCardDOM(knowSubject, imgUrl);
+      conv.messages.push({ role: 'assistant', content: explanation });
+      conv.messages.push({ role: 'assistant', content: `__IMG__${JSON.stringify({ prompt: knowSubject, url: imgUrl })}` });
+      persist();
+    } catch (err) {
+      typingEl.remove();
+      const msg = `אופס, נסה שוב 🔄`;
+      addMessageDOM('bot', msg);
+      conv.messages.push({ role: 'assistant', content: msg });
+      persist();
+    } finally {
+      state.loading = false;
+      updateSendButton();
+    }
+    return;
+  }
+
   // Video generation intent (must come before image - "סרטון" is more specific)
   const videoPrompt = detectVideoRequest(text);
   if (videoPrompt) {
@@ -650,7 +700,7 @@ async function sendMessage() {
       const baseSeed = Math.floor(Math.random() * 1e6);
       const frames = [];
       for (let i = 0; i < 8; i++) {
-        frames.push(`https://image.pollinations.ai/prompt/${encodeURIComponent(videoPrompt + ', cinematic frame ' + (i+1))}?width=720&height=720&seed=${baseSeed + i * 11}&nologo=true&model=flux`);
+        frames.push(`https://image.pollinations.ai/prompt/${encodeURIComponent(videoPrompt + VIDEO_QUALITY + ', frame ' + (i+1) + ' of cinematic sequence')}?width=896&height=896&seed=${baseSeed + i * 11}&nologo=true&model=flux&enhance=true`);
       }
       typingEl.remove();
       addVideoCardDOM(videoPrompt, frames);
@@ -679,7 +729,7 @@ async function sendMessage() {
     try {
       await new Promise(r => setTimeout(r, 200));
       const seed = Math.floor(Math.random() * 1e6);
-      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux&enhance=true`;
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt + QUALITY_SUFFIX)}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux&enhance=true`;
       typingEl.remove();
       addImageCardDOM(imagePrompt, url);
       const stored = `__IMG__${JSON.stringify({ prompt: imagePrompt, url })}`;
@@ -789,30 +839,56 @@ async function callClaude(conv) {
   return data.content?.[0]?.text || '(תשובה ריקה)';
 }
 
+async function fetchWithTimeout(url, options = {}, timeoutMs = 25000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function callPublicAI(conv) {
   const cat = CATEGORIES[state.category];
   const messages = [
-    { role: 'system', content: cat.system },
-    ...conv.messages.map(m => ({
-      role: m.role === 'assistant' ? 'assistant' : 'user',
-      content: m.content,
-    })),
+    { role: 'system', content: cat.system + ' If you do not know something or need current information, use web search to find accurate up-to-date information.' },
+    ...conv.messages
+      .filter(m => !m.content.startsWith('__IMG__') && !m.content.startsWith('__VID__'))
+      .map(m => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: m.content,
+      })),
   ];
-  const res = await fetch('https://text.pollinations.ai/openai', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages, model: 'openai-large', stream: false, private: true }),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const ct = res.headers.get('content-type') || '';
-  if (ct.includes('application/json')) {
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content
-      || data.message?.content
-      || data.content
-      || (typeof data === 'string' ? data : JSON.stringify(data));
+
+  // Try multiple models with fallback - searchgpt has web access
+  const models = ['searchgpt', 'openai-large', 'openai', 'mistral'];
+  let lastErr = null;
+  for (const model of models) {
+    try {
+      const res = await fetchWithTimeout('https://text.pollinations.ai/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, model, stream: false, private: true }),
+      }, 22000);
+      if (!res.ok) { lastErr = new Error(`HTTP ${res.status}`); continue; }
+      const ct = res.headers.get('content-type') || '';
+      let text;
+      if (ct.includes('application/json')) {
+        const data = await res.json();
+        text = data.choices?.[0]?.message?.content
+          || data.message?.content
+          || data.content
+          || '';
+      } else {
+        text = await res.text();
+      }
+      if (text && text.trim().length > 0) return text;
+    } catch (e) {
+      lastErr = e;
+    }
   }
-  return await res.text();
+  throw lastErr || new Error('כל המודלים לא זמינים כרגע');
 }
 
 function autoResize() {
@@ -877,6 +953,14 @@ els.input.addEventListener('keydown', e => {
 els.sendBtn.addEventListener('click', sendMessage);
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !els.settingsModal.hidden) closeSettings();
+});
+
+window.addEventListener('error', (e) => {
+  console.error('Astra error:', e.error || e.message);
+  showToast('משהו השתבש - מנסה להתאושש', true);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('Astra promise rejection:', e.reason);
 });
 
 applyTheme();
