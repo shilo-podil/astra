@@ -184,6 +184,18 @@ function detectImageRequest(text) {
   return null;
 }
 
+const VIDEO_TRIGGERS = [
+  /^\s*(?:תיצור לי סרטון של|תיצור סרטון של|תיצור לי סרטון|תיצור סרטון|תייצר לי סרטון של|תייצר סרטון של|תייצר לי סרטון|תייצר סרטון|ייצר סרטון|תכין סרטון|תפיק סרטון|סרטון של|תן לי סרטון של|תן לי סרטון|הראה לי סרטון של|הראה לי סרטון|אני רוצה סרטון של|אני רוצה סרטון|generate a video of|generate a video|create a video of|create a video|make a video of|make a video|video of)\s*[:\-,]?\s*(.+)/i,
+];
+
+function detectVideoRequest(text) {
+  for (const re of VIDEO_TRIGGERS) {
+    const m = text.match(re);
+    if (m && m[1] && m[1].trim().length > 0) return m[1].trim();
+  }
+  return null;
+}
+
 const QUIZ_TRIGGERS = [
   /^\s*(תן לי חידון|עשה לי חידון|תעשה חידון|חידון על|חידון של|תכין לי חידון|quiz me about|make a quiz about|create a quiz on)\s+(.+)/i,
   /^\s*(תן לי חידון|עשה לי חידון|חידון|quiz|make a quiz)\s*[!?.]*\s*$/i,
@@ -356,8 +368,121 @@ function renderMessages() {
         return;
       } catch {}
     }
+    if (m.role === 'assistant' && m.content.startsWith('__VID__')) {
+      try {
+        const data = JSON.parse(m.content.slice(7));
+        addVideoCardDOM(data.prompt, data.frames);
+        return;
+      } catch {}
+    }
     addMessageDOM(m.role, m.content);
   });
+}
+
+function addVideoCardDOM(prompt, frames) {
+  els.welcome.classList.add('hidden');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `
+    <div class="msg-avatar">A</div>
+    <div class="msg-body">
+      <div class="msg-name">Astra</div>
+      <div class="img-card">
+        <div class="img-wrap">
+          <div class="img-loading"><div class="spinner"></div><span>מייצר סרטון (${frames.length} פריימים)...</span></div>
+          <img class="img-main vid-frame" alt="${escapeHtml(prompt)}" />
+          <div class="vid-overlay">
+            <button class="vid-play" data-act="toggle">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
+            </button>
+            <div class="vid-progress"><div class="vid-bar"></div></div>
+          </div>
+        </div>
+        <div class="img-footer">
+          <div class="img-prompt" title="${escapeHtml(prompt)}">🎬 ${escapeHtml(prompt)}</div>
+          <div class="img-actions">
+            <button class="img-btn" data-act="regen" title="צור מחדש">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            </button>
+            <button class="img-btn" data-act="download" title="הורד פריים נוכחי">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <button class="img-btn" data-act="open" title="פתח פריים בחלון חדש">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  const img = div.querySelector('.vid-frame');
+  const loader = div.querySelector('.img-loading');
+  const playBtn = div.querySelector('.vid-play');
+  const bar = div.querySelector('.vid-bar');
+
+  // Preload all frames
+  let loaded = 0;
+  const preloaded = [];
+  frames.forEach((src, i) => {
+    const im = new Image();
+    im.onload = () => {
+      loaded++;
+      if (loaded === 1) {
+        loader.style.display = 'none';
+        img.style.opacity = '1';
+        img.src = preloaded[0]?.src || src;
+        startPlay();
+      }
+    };
+    im.src = src;
+    preloaded[i] = im;
+  });
+
+  let idx = 0;
+  let playing = true;
+  let timer = null;
+  const FRAME_MS = 400;
+
+  function step() {
+    idx = (idx + 1) % frames.length;
+    img.src = preloaded[idx]?.src || frames[idx];
+    bar.style.width = ((idx + 1) / frames.length * 100) + '%';
+  }
+  function startPlay() {
+    playing = true;
+    playBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>';
+    timer = setInterval(step, FRAME_MS);
+  }
+  function pausePlay() {
+    playing = false;
+    playBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>';
+    if (timer) clearInterval(timer);
+  }
+  playBtn.addEventListener('click', () => playing ? pausePlay() : startPlay());
+
+  div.querySelector('[data-act="download"]').addEventListener('click', async () => {
+    try {
+      const r = await fetch(frames[idx]);
+      const blob = await r.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `astra-video-frame-${idx + 1}.jpg`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch { window.open(frames[idx], '_blank'); }
+  });
+  div.querySelector('[data-act="open"]').addEventListener('click', () => window.open(frames[idx], '_blank'));
+  div.querySelector('[data-act="regen"]').addEventListener('click', () => {
+    if (timer) clearInterval(timer);
+    els.input.value = `סרטון של ${prompt}`;
+    autoResize();
+    updateSendButton();
+    sendMessage();
+  });
+
+  els.messages.appendChild(div);
+  els.chat.scrollTop = els.chat.scrollHeight;
+  return div;
 }
 
 function addImageCardDOM(prompt, url) {
@@ -513,6 +638,37 @@ async function sendMessage() {
   addMessageDOM('user', text);
   persist();
   renderHistory();
+
+  // Video generation intent (must come before image - "סרטון" is more specific)
+  const videoPrompt = detectVideoRequest(text);
+  if (videoPrompt) {
+    state.loading = true;
+    updateSendButton();
+    const typingEl = addMessageDOM('bot', '', true);
+    try {
+      await new Promise(r => setTimeout(r, 200));
+      const baseSeed = Math.floor(Math.random() * 1e6);
+      const frames = [];
+      for (let i = 0; i < 8; i++) {
+        frames.push(`https://image.pollinations.ai/prompt/${encodeURIComponent(videoPrompt + ', cinematic frame ' + (i+1))}?width=720&height=720&seed=${baseSeed + i * 11}&nologo=true&model=flux`);
+      }
+      typingEl.remove();
+      addVideoCardDOM(videoPrompt, frames);
+      const stored = `__VID__${JSON.stringify({ prompt: videoPrompt, frames })}`;
+      conv.messages.push({ role: 'assistant', content: stored });
+      persist();
+    } catch (err) {
+      typingEl.remove();
+      const msg = `לא הצלחתי ליצור את הסרטון. נסה שוב 🔄`;
+      addMessageDOM('bot', msg);
+      conv.messages.push({ role: 'assistant', content: msg });
+      persist();
+    } finally {
+      state.loading = false;
+      updateSendButton();
+    }
+    return;
+  }
 
   // Image generation intent
   const imagePrompt = detectImageRequest(text);

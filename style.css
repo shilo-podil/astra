@@ -512,6 +512,12 @@ a { color: var(--accent); }
 .img-btn { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; color: var(--text-dim); transition: background 0.15s, color 0.15s, transform 0.1s; }
 .img-btn:hover { background: var(--bg-elev-2); color: var(--text); }
 .img-btn:active { transform: scale(0.94); }
+.vid-overlay { position: absolute; left: 0; right: 0; bottom: 0; padding: 12px; display: flex; align-items: center; gap: 10px; background: linear-gradient(to top, rgba(0,0,0,0.65), transparent); opacity: 0; transition: opacity 0.2s; }
+.img-wrap:hover .vid-overlay { opacity: 1; }
+.vid-play { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.95); color: #000; display: grid; place-items: center; cursor: pointer; transition: transform 0.1s; border: none; }
+.vid-play:hover { transform: scale(1.08); }
+.vid-progress { flex: 1; height: 4px; background: rgba(255,255,255,0.25); border-radius: 2px; overflow: hidden; }
+.vid-bar { height: 100%; width: 0; background: linear-gradient(90deg, #a78bfa, #ec4899); transition: width 0.35s linear; }
 
 .msg-image {
   max-width: 100%;

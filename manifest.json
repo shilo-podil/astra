@@ -1,0 +1,21 @@
+{
+  "name": "Astra AI - הבוט שיודע הכל",
+  "short_name": "Astra AI",
+  "description": "בוט AI חכם בעברית שיודע הכל - קוד, כתיבה, לימוד, יצירה, תמונות וסרטונים",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#a78bfa",
+  "background_color": "#0e0e10",
+  "lang": "he",
+  "dir": "rtl",
+  "categories": ["productivity", "education", "utilities"],
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "שיחה חדשה", "url": "./?new=1" },
+    { "name": "צייר תמונה", "url": "./?action=image" }
+  ]
+}

@@ -9,6 +9,11 @@
   <meta name="author" content="Astra AI" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://shilo-podil.github.io/astra/" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#a78bfa" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Astra AI" />
+  <link rel="apple-touch-icon" href="icon.svg" />
 
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Astra AI - הבוט שיודע הכל" />
@@ -184,5 +189,27 @@
   <div class="toast" id="toast"></div>
 
   <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').catch(() => {});
+      });
+    }
+    let deferredInstall;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstall = e;
+      const btn = document.createElement('button');
+      btn.id = 'installBtn';
+      btn.innerHTML = '⬇️ התקן כאפליקציה';
+      btn.style.cssText = 'position:fixed;bottom:20px;left:20px;padding:10px 16px;background:linear-gradient(135deg,#a78bfa,#ec4899);color:white;border:none;border-radius:10px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(167,139,250,.4);z-index:50;font-family:Heebo,sans-serif;';
+      btn.onclick = async () => {
+        deferredInstall.prompt();
+        await deferredInstall.userChoice;
+        btn.remove();
+      };
+      document.body.appendChild(btn);
+    });
+  </script>
 </body>
 </html>
