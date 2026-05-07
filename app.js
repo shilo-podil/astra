@@ -314,11 +314,75 @@ function renderHistory() {
   list.forEach(c => {
     const div = document.createElement('div');
     div.className = 'history-item' + (c.id === state.activeId ? ' active' : '');
-    div.title = c.title;
+    div.title = c.title + ' (קליק ימני לאפשרויות)';
     div.innerHTML = `<span>💬</span><span style="overflow:hidden;text-overflow:ellipsis;">${escapeHtml(c.title)}</span>`;
     div.addEventListener('click', () => loadConversation(c.id));
+    div.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      showContextMenu(e.pageX, e.pageY, [
+        { label: '▶ המשך שיחה', action: () => loadConversation(c.id) },
+        { label: '✏️ ערוך שם', action: () => renameConversation(c.id) },
+        { label: '🗑️ מחק', action: () => deleteConversation(c.id), danger: true },
+      ]);
+    });
     els.history.appendChild(div);
   });
+}
+
+function showContextMenu(x, y, items) {
+  closeContextMenu();
+  const menu = document.createElement('div');
+  menu.className = 'ctx-menu';
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+  items.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'ctx-item' + (item.danger ? ' danger' : '');
+    btn.textContent = item.label;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      item.action();
+      closeContextMenu();
+    });
+    menu.appendChild(btn);
+  });
+  document.body.appendChild(menu);
+  // Adjust position if off-screen
+  const r = menu.getBoundingClientRect();
+  if (r.right > window.innerWidth) menu.style.left = (window.innerWidth - r.width - 8) + 'px';
+  if (r.bottom > window.innerHeight) menu.style.top = (window.innerHeight - r.height - 8) + 'px';
+  setTimeout(() => {
+    document.addEventListener('click', closeContextMenu, { once: true });
+    document.addEventListener('contextmenu', closeContextMenu, { once: true });
+  }, 0);
+}
+
+function closeContextMenu() {
+  document.querySelectorAll('.ctx-menu').forEach(m => m.remove());
+}
+
+function deleteConversation(id) {
+  if (!confirm('למחוק את השיחה?')) return;
+  state.conversations = state.conversations.filter(c => c.id !== id);
+  if (state.activeId === id) {
+    state.activeId = state.conversations.length ? state.conversations[state.conversations.length - 1].id : null;
+  }
+  persist();
+  renderHistory();
+  renderMessages();
+  showToast('השיחה נמחקה');
+}
+
+function renameConversation(id) {
+  const conv = state.conversations.find(c => c.id === id);
+  if (!conv) return;
+  const newTitle = prompt('שם חדש לשיחה:', conv.title);
+  if (newTitle && newTitle.trim()) {
+    conv.title = newTitle.trim();
+    persist();
+    renderHistory();
+    showToast('השם עודכן ✓');
+  }
 }
 
 function escapeHtml(s) {
@@ -392,8 +456,66 @@ function renderMessages() {
         return;
       } catch {}
     }
+    if (m.role === 'assistant' && m.content.startsWith('__GRID__')) {
+      try {
+        const data = JSON.parse(m.content.slice(8));
+        addImageGridDOM(data.subject, data.images);
+        return;
+      } catch {}
+    }
     addMessageDOM(m.role, m.content);
   });
+}
+
+function addImageGridDOM(subject, images) {
+  els.welcome.classList.add('hidden');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  const cells = images.map((img, i) => `
+    <div class="grid-cell" data-i="${i}">
+      <div class="grid-loader"><div class="spinner"></div></div>
+      <img alt="${escapeHtml(img.caption)}" loading="lazy" />
+    </div>
+  `).join('');
+  div.innerHTML = `
+    <div class="msg-avatar">A</div>
+    <div class="msg-body">
+      <div class="msg-name">Astra</div>
+      <div class="grid-card">
+        <div class="grid-title">🔍 ${escapeHtml(subject)}</div>
+        <div class="img-grid">${cells}</div>
+      </div>
+    </div>
+  `;
+  div.querySelectorAll('.grid-cell').forEach((cell) => {
+    const i = parseInt(cell.dataset.i, 10);
+    const im = cell.querySelector('img');
+    const loader = cell.querySelector('.grid-loader');
+    im.addEventListener('load', () => { loader.style.display = 'none'; im.classList.add('loaded'); });
+    im.addEventListener('error', () => { loader.innerHTML = '⚠️'; });
+    im.src = images[i].url;
+    cell.addEventListener('click', () => openLightbox(images[i].url, subject));
+  });
+  els.messages.appendChild(div);
+  els.chat.scrollTop = els.chat.scrollHeight;
+  return div;
+}
+
+function openLightbox(url, caption = '') {
+  const lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.innerHTML = `
+    <button class="lb-close" title="סגור">×</button>
+    <img src="${url}" alt="${escapeHtml(caption)}" />
+    ${caption ? `<div class="lb-caption">${escapeHtml(caption)}</div>` : ''}
+  `;
+  lb.addEventListener('click', (e) => {
+    if (e.target === lb || e.target.classList.contains('lb-close')) lb.remove();
+  });
+  document.addEventListener('keydown', function esc(e) {
+    if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', esc); }
+  });
+  document.body.appendChild(lb);
 }
 
 function addVideoCardDOM(prompt, frames) {
@@ -656,29 +778,33 @@ async function sendMessage() {
   persist();
   renderHistory();
 
-  // "What is X" / "Do you know X" intent - show image + explanation
+  // "What is X" / "Do you know X" intent - show image grid + explanation
   const knowSubject = detectKnowRequest(text);
   if (knowSubject && !detectVideoRequest(text) && !detectImageRequest(text)) {
     state.loading = true;
     updateSendButton();
     const typingEl = addMessageDOM('bot', '', true);
     try {
-      const seed = Math.floor(Math.random() * 1e6);
-      const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(knowSubject + QUALITY_SUFFIX)}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux&enhance=true`;
-      const fakeConv = { ...conv, messages: [{ role: 'user', content: `הסבר בקצרה (3-5 משפטים) מה זה "${knowSubject}". ענה בעברית פשוטה וברורה.` }] };
+      const baseSeed = Math.floor(Math.random() * 1e6);
+      const variations = ['', ', close-up shot', ', wide cinematic angle', ', detailed photograph', ', minimal aesthetic', ', dramatic lighting'];
+      const images = variations.map((v, i) => ({
+        url: `https://image.pollinations.ai/prompt/${encodeURIComponent(knowSubject + v + QUALITY_SUFFIX)}?width=768&height=768&seed=${baseSeed + i * 13}&nologo=true&model=flux&enhance=true`,
+        caption: knowSubject,
+      }));
+      const fakeConv = { ...conv, messages: [{ role: 'user', content: `הסבר בקצרה (3-4 משפטים) מה זה "${knowSubject}". ענה בעברית פשוטה וברורה.` }] };
       let explanation = '';
       try {
         explanation = state.apiKey ? await callClaude(fakeConv) : await callPublicAI(fakeConv);
-      } catch { explanation = `**${knowSubject}** - הנה איך זה נראה:`; }
+      } catch { explanation = `**${knowSubject}**`; }
       typingEl.remove();
       addMessageDOM('bot', explanation);
-      addImageCardDOM(knowSubject, imgUrl);
+      addImageGridDOM(knowSubject, images);
       conv.messages.push({ role: 'assistant', content: explanation });
-      conv.messages.push({ role: 'assistant', content: `__IMG__${JSON.stringify({ prompt: knowSubject, url: imgUrl })}` });
+      conv.messages.push({ role: 'assistant', content: `__GRID__${JSON.stringify({ subject: knowSubject, images })}` });
       persist();
     } catch (err) {
       typingEl.remove();
-      const msg = `אופס, נסה שוב 🔄`;
+      const msg = `רק רגע, נסה לשאול שוב 💭`;
       addMessageDOM('bot', msg);
       conv.messages.push({ role: 'assistant', content: msg });
       persist();
@@ -799,7 +925,7 @@ async function sendMessage() {
     persist();
   } catch (err) {
     typingEl.remove();
-    const fallback = `אופס, נתקלתי בבעיית רשת. נסה שוב בעוד רגע 🔄`;
+    const fallback = `רק רגע, אני חושב על זה... תוכל לנסח שוב או לפרט יותר? 💭`;
     addMessageDOM('bot', fallback);
     conv.messages.push({ role: 'assistant', content: fallback });
     persist();

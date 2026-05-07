@@ -519,6 +519,29 @@ a { color: var(--accent); }
 .vid-progress { flex: 1; height: 4px; background: rgba(255,255,255,0.25); border-radius: 2px; overflow: hidden; }
 .vid-bar { height: 100%; width: 0; background: linear-gradient(90deg, #a78bfa, #ec4899); transition: width 0.35s linear; }
 
+.grid-card { margin-top: 6px; max-width: 600px; }
+.grid-title { font-size: 13.5px; color: var(--text-dim); margin-bottom: 8px; padding: 0 4px; font-weight: 600; }
+.img-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; border-radius: 14px; overflow: hidden; }
+.grid-cell { position: relative; aspect-ratio: 1; background: var(--bg-elev); cursor: zoom-in; overflow: hidden; }
+.grid-cell img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.3s, transform 0.4s; display: block; }
+.grid-cell img.loaded { opacity: 1; }
+.grid-cell:hover img.loaded { transform: scale(1.06); }
+.grid-loader { position: absolute; inset: 0; display: grid; place-items: center; color: var(--text-muted); font-size: 18px; }
+@media (max-width: 600px) { .img-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 500; display: grid; place-items: center; padding: 32px; backdrop-filter: blur(4px); animation: fadeIn 0.2s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.lightbox img { max-width: 92vw; max-height: 86vh; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.lb-close { position: absolute; top: 20px; left: 20px; width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.15); color: white; font-size: 28px; line-height: 1; cursor: pointer; border: none; transition: background 0.15s; }
+.lb-close:hover { background: rgba(255,255,255,0.3); }
+.lb-caption { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); color: white; background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 8px; font-size: 14px; max-width: 80vw; text-align: center; }
+
+.ctx-menu { position: fixed; z-index: 400; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); padding: 4px; min-width: 160px; animation: pop 0.12s ease; }
+.ctx-item { display: block; width: 100%; padding: 9px 14px; text-align: right; font-size: 14px; color: var(--text); border-radius: 6px; transition: background 0.1s; cursor: pointer; border: none; background: none; font-family: inherit; }
+.ctx-item:hover { background: var(--bg-elev-2); }
+.ctx-item.danger { color: var(--danger); }
+.ctx-item.danger:hover { background: rgba(248, 113, 113, 0.12); }
+
 .msg-image {
   max-width: 100%;
   width: 460px;
