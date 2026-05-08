@@ -238,30 +238,38 @@
 
     function showInstallBanner() {
       if (isStandalone()) return;
-      if (sessionStorage.getItem('astra_install_dismissed')) return;
       if (document.getElementById('installBanner')) return;
       const mobile = isMobile();
       const ios = isIOS();
       const banner = document.createElement('div');
       banner.id = 'installBanner';
-      banner.className = 'install-banner' + (mobile ? ' mobile' : '');
+      banner.className = 'install-banner persistent' + (mobile ? ' mobile' : '');
       banner.innerHTML = mobile
         ? (ios
-            ? '<div class="ib-icon">📱</div><div class="ib-text"><strong>התקן Astra כאפליקציה</strong><small>לחץ על ⬆️ למטה ואז "Add to Home Screen"</small></div><button class="ib-close" aria-label="סגור">×</button>'
-            : '<div class="ib-icon">⬇️</div><div class="ib-text"><strong>התקן Astra כאפליקציה</strong><small>תופיע באייקון על המסך הראשי</small></div><button class="ib-action" id="ibInstall">התקן</button><button class="ib-close" aria-label="סגור">×</button>')
-        : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>התקן כאפליקציה</span>';
+            ? '<div class="ib-icon">📱</div><div class="ib-text"><strong>התקן את Astra בטלפון</strong><small>לחץ ⬆️ למטה → "Add to Home Screen"</small></div>'
+            : '<div class="ib-icon">⬇️</div><div class="ib-text"><strong>התקן את Astra בטלפון</strong><small>אייקון על המסך הראשי</small></div><button class="ib-action" id="ibInstall">התקן</button>')
+        : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>התקן למחשב</span>';
       if (!mobile) {
         banner.style.cursor = 'pointer';
         banner.onclick = async () => {
-          if (deferredInstall) { deferredInstall.prompt(); await deferredInstall.userChoice; banner.remove(); }
+          if (deferredInstall) {
+            deferredInstall.prompt();
+            const r = await deferredInstall.userChoice;
+            if (r.outcome === 'accepted') banner.remove();
+          }
         };
       }
       document.body.appendChild(banner);
-      const closeBtn = banner.querySelector('.ib-close');
-      if (closeBtn) closeBtn.onclick = (e) => { e.stopPropagation(); banner.remove(); sessionStorage.setItem('astra_install_dismissed', '1'); };
       const installBtn = document.getElementById('ibInstall');
-      if (installBtn && deferredInstall) {
-        installBtn.onclick = async (e) => { e.stopPropagation(); deferredInstall.prompt(); await deferredInstall.userChoice; banner.remove(); };
+      if (installBtn) {
+        installBtn.onclick = async (e) => {
+          e.stopPropagation();
+          if (deferredInstall) {
+            deferredInstall.prompt();
+            const r = await deferredInstall.userChoice;
+            if (r.outcome === 'accepted') banner.remove();
+          }
+        };
       }
     }
 
@@ -271,10 +279,10 @@
       showInstallBanner();
     });
 
-    // Mobile: ALWAYS show banner after a short delay (with or without prompt event)
-    if (isMobile() && !isStandalone()) {
-      window.addEventListener('load', () => setTimeout(showInstallBanner, 2500));
-    }
+    // Always show install banner on every visit (after splash) - persistent
+    window.addEventListener('load', () => {
+      if (!isStandalone()) setTimeout(showInstallBanner, 3300);
+    });
   </script>
 </body>
 </html>

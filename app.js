@@ -398,7 +398,7 @@ async function searchDuckDuckGoImages(query, count = 8) {
       let results = (data.results || []).filter(r =>
         r.image && /^https?:\/\//.test(r.image) &&
         /\.(jpe?g|png|webp)(\?|$)/i.test(r.image) &&
-        (!r.width || r.width >= 1000) && (!r.height || r.height >= 600)
+        (!r.width || r.width >= 1600) && (!r.height || r.height >= 1000)
       );
       // Sort by resolution descending (largest first)
       results.sort((a, b) => ((b.width || 0) * (b.height || 0)) - ((a.width || 0) * (a.height || 0)));
