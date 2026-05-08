@@ -352,6 +352,35 @@ function detectKnowRequest(text) {
 const QUALITY_SUFFIX = ', photorealistic, sharp focus, ultra detailed, professional photography';
 const VIDEO_QUALITY = ', cinematic, sharp focus, professional cinematography, photorealistic';
 
+// AI-enhance prompt for image generation (like ChatGPT does for DALL-E)
+async function enhanceImagePrompt(prompt, mode = 'image') {
+  const englishPrompt = await translateToEnglish(prompt);
+  try {
+    const sysMsg = mode === 'video'
+      ? 'You are a professional cinematic prompt engineer. Take the user request and rewrite it as a detailed, vivid English video frame prompt. Add: specific subject details, dramatic lighting, composition, camera angle, atmosphere, cinematic style. Output ONLY the improved prompt, max 50 words. No preamble.'
+      : 'You are a professional image prompt engineer like Midjourney/DALL-E. Take the user request and rewrite it as a detailed, vivid English photo prompt. Add: specific subject details (clothing, expression, pose), lighting (golden hour, soft, dramatic), composition (close-up, wide), camera (DSLR, lens), atmosphere, ultra-realistic photographic style. Output ONLY the improved prompt, max 60 words. No preamble.';
+    const res = await fetchWithTimeout('https://text.pollinations.ai/openai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [
+          { role: 'system', content: sysMsg },
+          { role: 'user', content: englishPrompt }
+        ],
+        model: 'openai-large',
+        stream: false,
+        private: true,
+      }),
+    }, 8000);
+    if (res.ok) {
+      const data = await res.json();
+      const enhanced = (data.choices?.[0]?.message?.content || '').trim().replace(/^["']|["']$/g, '');
+      if (enhanced && enhanced.length > englishPrompt.length && enhanced.length < 500) return enhanced;
+    }
+  } catch {}
+  return englishPrompt;
+}
+
 // Translate Hebrew/Arabic/Russian to English silently for better photo search
 async function translateToEnglish(text) {
   if (!/[֐-׿؀-ۿЀ-ӿ]/.test(text)) return text;
@@ -590,7 +619,8 @@ function renderHistory() {
       showContextMenu(e.pageX, e.pageY, [
         { label: '▶ המשך שיחה', action: () => loadConversation(c.id) },
         { label: '✏️ ערוך שם', action: () => renameConversation(c.id) },
-        { label: '🗑️ מחק', action: () => deleteConversation(c.id), danger: true },
+        { label: '🗑️ מחק שיחה זו', action: () => deleteConversation(c.id), danger: true },
+        { label: '🗑️ מחק את כל הפרוייקטים', action: deleteAllConversations, danger: true },
       ]);
     });
     els.history.appendChild(div);
@@ -639,6 +669,21 @@ function deleteConversation(id) {
   renderHistory();
   renderMessages();
   showToast('השיחה נמחקה');
+}
+
+function deleteAllConversations() {
+  if (!state.conversations.length) {
+    showToast('אין שיחות למחוק');
+    return;
+  }
+  const count = state.conversations.length;
+  if (!confirm(`למחוק את כל ${count} השיחות? לא ניתן לבטל.`)) return;
+  state.conversations = [];
+  state.activeId = null;
+  persist();
+  renderHistory();
+  renderMessages();
+  showToast(`${count} שיחות נמחקו ✓`);
 }
 
 function renameConversation(id) {
@@ -1064,10 +1109,10 @@ async function sendMessage() {
     updateSendButton();
     const typingEl = addMessageDOM('bot', '', true);
     try {
-      const englishSubject = await translateToEnglish(knowSubject);
+      const enhancedSubject = await enhanceImagePrompt(knowSubject, 'image');
       const baseSeed = Math.floor(Math.random() * 1e6);
       const images = Array.from({ length: 6 }, (_, i) => ({
-        url: buildRealPhotoUrl(englishSubject, { width: 768, height: 768, seed: baseSeed + i * 13 }),
+        url: buildImageUrl(enhancedSubject, { width: 768, height: 768, seed: baseSeed + i * 13, model: 'flux', suffix: '' }),
         caption: knowSubject,
       }));
       const fakeConv = { ...conv, messages: [{ role: 'user', content: `הסבר בקצרה (3-4 משפטים) מה זה "${knowSubject}". ענה בעברית פשוטה וברורה.` }] };
@@ -1101,11 +1146,11 @@ async function sendMessage() {
     updateSendButton();
     const typingEl = addMessageDOM('bot', '', true);
     try {
-      const englishPrompt = await translateToEnglish(videoPrompt);
+      const enhancedPrompt = await enhanceImagePrompt(videoPrompt, 'video');
       const baseSeed = Math.floor(Math.random() * 1e6);
       const frames = [];
       for (let i = 0; i < 8; i++) {
-        frames.push(buildRealPhotoUrl(englishPrompt, { width: 896, height: 896, seed: baseSeed + i * 11 }));
+        frames.push(buildImageUrl(enhancedPrompt, { width: 1024, height: 1024, seed: baseSeed + i * 11, model: 'flux', suffix: '' }));
       }
       typingEl.remove();
       addVideoCardDOM(videoPrompt, frames);
@@ -1127,9 +1172,9 @@ async function sendMessage() {
     updateSendButton();
     const typingEl = addMessageDOM('bot', '', true);
     try {
-      const englishPrompt = await translateToEnglish(imagePrompt);
+      const enhancedPrompt = await enhanceImagePrompt(imagePrompt, 'image');
       const seed = Math.floor(Math.random() * 1e6);
-      const url = buildRealPhotoUrl(englishPrompt, { seed });
+      const url = buildImageUrl(enhancedPrompt, { seed, model: 'flux', suffix: '' });
       typingEl.remove();
       addImageCardDOM(imagePrompt, url);
       conv.messages.push({ role: 'assistant', content: `__IMG__${JSON.stringify({ prompt: imagePrompt, url })}` });
