@@ -50,7 +50,6 @@
   <div id="splash" class="splash">
     <div class="splash-inner">
       <div class="splash-title"><span class="grad">Astra AI</span></div>
-      <div class="splash-sub" id="splashSub">מאת אלון דה בר</div>
     </div>
   </div>
 
@@ -197,9 +196,9 @@
         </label>
 
         <label class="field">
-          <span>שפת ההתחלה (כיתוב הפותח)</span>
+          <span>שפה</span>
           <select id="langSelect"></select>
-          <small>השפה בה מוצג "מאת אלון דה בר" במסך הפתיחה.</small>
+          <small>שפת הממשק של האפליקציה.</small>
         </label>
 
         <div class="modal-actions">
@@ -236,6 +235,28 @@
     function isMobile() { return /Android|iPad|iPhone|iPod|Mobile/i.test(navigator.userAgent); }
     function isStandalone() { return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
 
+    async function triggerInstall() {
+      if (deferredInstall) {
+        try {
+          deferredInstall.prompt();
+          const r = await deferredInstall.userChoice;
+          if (r.outcome === 'accepted') {
+            const b = document.getElementById('installBanner');
+            if (b) b.remove();
+          }
+          deferredInstall = null;
+        } catch {}
+        return;
+      }
+      if (isIOS()) {
+        alert('להתקנה ב-iPhone:\n\n1. לחץ על כפתור השיתוף ⬆️ בתחתית הדפדפן\n2. גלול ובחר "Add to Home Screen" / "הוסף למסך הבית"\n3. לחץ "Add"\n\nהאפליקציה תופיע על המסך הראשי כמו אפליקציה רגילה.');
+      } else if (isMobile()) {
+        alert('להתקנה באנדרואיד:\n\n1. פתח את תפריט Chrome (3 נקודות בפינה)\n2. לחץ "Install app" / "התקן אפליקציה"\n3. לחץ "Install"\n\nהאפליקציה תופיע באייקון על המסך הראשי.');
+      } else {
+        alert('להתקנה במחשב:\n\n1. לחץ על אייקון ההתקנה ⬇️ בסוף שורת הכתובת\n2. לחץ "התקן" / "Install"\n\nאו: תפריט הדפדפן → "Install Astra AI"');
+      }
+    }
+
     function showInstallBanner() {
       if (isStandalone()) return;
       if (document.getElementById('installBanner')) return;
@@ -246,31 +267,14 @@
       banner.className = 'install-banner persistent' + (mobile ? ' mobile' : '');
       banner.innerHTML = mobile
         ? (ios
-            ? '<div class="ib-icon">📱</div><div class="ib-text"><strong>התקן את Astra בטלפון</strong><small>לחץ ⬆️ למטה → "Add to Home Screen"</small></div>'
+            ? '<div class="ib-icon">📱</div><div class="ib-text"><strong>התקן את Astra בטלפון</strong><small>לחץ כאן להוראות</small></div>'
             : '<div class="ib-icon">⬇️</div><div class="ib-text"><strong>התקן את Astra בטלפון</strong><small>אייקון על המסך הראשי</small></div><button class="ib-action" id="ibInstall">התקן</button>')
         : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>התקן למחשב</span>';
-      if (!mobile) {
-        banner.style.cursor = 'pointer';
-        banner.onclick = async () => {
-          if (deferredInstall) {
-            deferredInstall.prompt();
-            const r = await deferredInstall.userChoice;
-            if (r.outcome === 'accepted') banner.remove();
-          }
-        };
-      }
+      banner.style.cursor = 'pointer';
+      banner.onclick = triggerInstall;
       document.body.appendChild(banner);
       const installBtn = document.getElementById('ibInstall');
-      if (installBtn) {
-        installBtn.onclick = async (e) => {
-          e.stopPropagation();
-          if (deferredInstall) {
-            deferredInstall.prompt();
-            const r = await deferredInstall.userChoice;
-            if (r.outcome === 'accepted') banner.remove();
-          }
-        };
-      }
+      if (installBtn) installBtn.onclick = (e) => { e.stopPropagation(); triggerInstall(); };
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
