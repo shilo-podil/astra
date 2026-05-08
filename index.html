@@ -235,12 +235,19 @@
     function isMobile() { return /Android|iPad|iPhone|iPod|Mobile/i.test(navigator.userAgent); }
     function isStandalone() { return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
 
+    window.addEventListener('appinstalled', () => {
+      localStorage.setItem('astra_installed', '1');
+      const b = document.getElementById('installBanner');
+      if (b) b.remove();
+    });
+
     async function triggerInstall() {
       if (deferredInstall) {
         try {
           deferredInstall.prompt();
           const r = await deferredInstall.userChoice;
           if (r.outcome === 'accepted') {
+            localStorage.setItem('astra_installed', '1');
             const b = document.getElementById('installBanner');
             if (b) b.remove();
           }
@@ -259,6 +266,7 @@
 
     function showInstallBanner() {
       if (isStandalone()) return;
+      if (localStorage.getItem('astra_installed')) return;
       if (document.getElementById('installBanner')) return;
       const mobile = isMobile();
       const ios = isIOS();
