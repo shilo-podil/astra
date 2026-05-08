@@ -395,11 +395,16 @@ async function searchDuckDuckGoImages(query, count = 8) {
       const r2 = await fetchWithTimeout(proxy + encodeURIComponent(imgUrl), {}, 6000);
       if (!r2.ok) continue;
       const data = await r2.json();
-      let results = (data.results || []).filter(r =>
-        r.image && /^https?:\/\//.test(r.image) &&
-        /\.(jpe?g|png|webp)(\?|$)/i.test(r.image) &&
-        (!r.width || r.width >= 1600) && (!r.height || r.height >= 1000)
-      );
+      const WATERMARK_DOMAINS = ['gettyimages', 'shutterstock', 'alamy', 'dreamstime', 'istockphoto', '123rf.com', 'depositphotos', 'adobe.com/stock', 'adobe.stock', 'bigstockphoto', 'imago-images', 'agefotostock', 'newscom.com', 'stockfresh', 'fotosearch', 'profimedia', 'corbisimages', 'rmsothebys'];
+      let results = (data.results || []).filter(r => {
+        if (!r.image || !/^https?:\/\//.test(r.image)) return false;
+        if (!/\.(jpe?g|png|webp)(\?|$)/i.test(r.image)) return false;
+        if (r.width && r.width < 1600) return false;
+        if (r.height && r.height < 1000) return false;
+        const u = r.image.toLowerCase();
+        if (WATERMARK_DOMAINS.some(d => u.includes(d))) return false;
+        return true;
+      });
       // Sort by resolution descending (largest first)
       results.sort((a, b) => ((b.width || 0) * (b.height || 0)) - ((a.width || 0) * (a.height || 0)));
       if (results.length === 0) continue;
@@ -466,7 +471,7 @@ async function translateToEnglish(text) {
 
 // Auto-retry image loading - never shows an error to the user
 function buildImageUrl(prompt, opts = {}) {
-  const { width = 1024, height = 1024, seed = Math.floor(Math.random() * 1e6), model = 'flux', suffix = QUALITY_SUFFIX } = opts;
+  const { width = 2048, height = 2048, seed = Math.floor(Math.random() * 1e6), model = 'flux', suffix = QUALITY_SUFFIX } = opts;
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt + (suffix || ''))}?width=${width}&height=${height}&seed=${seed}&nologo=true&model=${model}&enhance=true`;
 }
 
@@ -1263,7 +1268,7 @@ async function sendMessage() {
       const baseSeed = Math.floor(Math.random() * 1e6);
       const frames = [];
       for (let i = 0; i < 8; i++) {
-        frames.push(buildImageUrl(enhancedPrompt, { width: 1024, height: 1024, seed: baseSeed + i * 11, model: 'flux', suffix: '' }));
+        frames.push(buildImageUrl(enhancedPrompt, { width: 2048, height: 2048, seed: baseSeed + i * 11, model: 'flux', suffix: '' }));
       }
       typingEl.remove();
       addVideoCardDOM(videoPrompt, frames);
