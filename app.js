@@ -349,8 +349,8 @@ function detectKnowRequest(text) {
   return null;
 }
 
-const QUALITY_SUFFIX = ', raw unedited photograph, real photo, candid documentary photography, hyperrealistic, photorealistic, taken with iphone 15 pro, natural lighting, real life, authentic, lifelike, depth of field, bokeh, 8k, professional, not AI, real photograph';
-const VIDEO_QUALITY = ', cinematic film still, real footage, photorealistic, professional cinematography, natural lighting, depth of field, 8k, hyperrealistic, real life';
+const QUALITY_SUFFIX = ', professional photography, award-winning photo, DSLR Canon EOS R5, sharp focus, ultra detailed, magazine quality, getty images, AP press photo, photojournalism, hyperrealistic, photorealistic, 8k resolution, masterpiece, real photograph, perfect composition, dramatic lighting';
+const VIDEO_QUALITY = ', cinematic film still, hollywood production, IMAX quality, professional cinematography, sharp 8k, dramatic lighting, photorealistic, masterpiece, real footage';
 
 // Translate Hebrew/Arabic/Russian to English silently for better photo search
 async function translateToEnglish(text) {
@@ -365,7 +365,7 @@ async function translateToEnglish(text) {
 
 // Auto-retry image loading - never shows an error to the user
 function buildImageUrl(prompt, opts = {}) {
-  const { width = 1024, height = 1024, seed = Math.floor(Math.random() * 1e6), model = 'flux-realism', suffix = QUALITY_SUFFIX } = opts;
+  const { width = 1280, height = 1280, seed = Math.floor(Math.random() * 1e6), model = 'gptimage', suffix = QUALITY_SUFFIX } = opts;
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt + (suffix || ''))}?width=${width}&height=${height}&seed=${seed}&nologo=true&model=${model}&enhance=true`;
 }
 
@@ -380,8 +380,8 @@ function attachAutoRetry(imgEl, prompt, opts = {}) {
   const width = opts.width || 1024;
   const height = opts.height || 1024;
   const suffix = opts.suffix !== undefined ? opts.suffix : QUALITY_SUFFIX;
-  // Strategy: real photos first, AI photorealism as fallback
-  const strategies = ['flickr', 'flickr', 'flickr', 'ai-realism', 'ai-realism', 'ai-flux', 'ai-turbo', 'flickr', 'ai-realism', 'ai-flux', 'ai-turbo', 'ai-realism'];
+  // Try premium models first (DALL-E quality), fall back through tiers
+  const models = ['gptimage', 'flux-pro', 'flux-realism', 'gptimage', 'flux', 'flux-realism', 'turbo', 'gptimage', 'flux-pro', 'flux-realism', 'flux', 'gptimage'];
   let retries = 0;
   const onError = () => {
     if (retries >= maxRetries) {
@@ -391,14 +391,8 @@ function attachAutoRetry(imgEl, prompt, opts = {}) {
     }
     retries++;
     const newSeed = Math.floor(Math.random() * 1e6);
-    const strategy = strategies[retries % strategies.length];
-    let url;
-    if (strategy === 'flickr') {
-      url = buildRealPhotoUrl(prompt, { width, height, seed: newSeed });
-    } else {
-      const model = strategy === 'ai-flux' ? 'flux' : strategy === 'ai-turbo' ? 'turbo' : 'flux-realism';
-      url = buildImageUrl(prompt, { width, height, seed: newSeed, model, suffix });
-    }
+    const model = models[retries % models.length];
+    const url = buildImageUrl(prompt, { width, height, seed: newSeed, model, suffix });
     setTimeout(() => { imgEl.src = url; }, 400);
   };
   imgEl.addEventListener('error', onError);
