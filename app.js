@@ -352,6 +352,43 @@ function detectKnowRequest(text) {
 const QUALITY_SUFFIX = ', photorealistic, sharp focus, ultra detailed, professional photography';
 const VIDEO_QUALITY = ', cinematic, sharp focus, professional cinematography, photorealistic';
 
+// Search REAL images from Wikipedia + Wikimedia Commons (no key needed, fully free)
+async function fetchWikipediaImage(query) {
+  try {
+    const u = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages&pithumbsize=1280&titles=${encodeURIComponent(query)}&origin=*&redirects=1`;
+    const r = await fetchWithTimeout(u, {}, 6000);
+    const d = await r.json();
+    const pages = Object.values(d.query?.pages || {});
+    if (pages[0]?.thumbnail?.source) return { url: pages[0].thumbnail.source, source: 'wikipedia' };
+  } catch {}
+  return null;
+}
+
+async function fetchCommonsImages(query, count = 8) {
+  try {
+    const u = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=1280&format=json&origin=*&gsrlimit=${count + 4}`;
+    const r = await fetchWithTimeout(u, {}, 6000);
+    const d = await r.json();
+    const pages = Object.values(d.query?.pages || {});
+    return pages
+      .filter(p => p.imageinfo?.[0]?.thumburl && /\.(jpg|jpeg|png|webp)$/i.test(p.imageinfo[0].thumburl))
+      .map(p => ({ url: p.imageinfo[0].thumburl, source: 'commons' }))
+      .slice(0, count);
+  } catch {}
+  return [];
+}
+
+async function searchRealImages(query, count = 6) {
+  const eng = await translateToEnglish(query);
+  const out = [];
+  const wiki = await fetchWikipediaImage(eng);
+  if (wiki) out.push(wiki);
+  const commons = await fetchCommonsImages(eng, count + 2);
+  out.push(...commons);
+  const seen = new Set();
+  return out.filter(r => { if (seen.has(r.url)) return false; seen.add(r.url); return true; }).slice(0, count);
+}
+
 // AI-enhance prompt for image generation (like ChatGPT does for DALL-E)
 async function enhanceImagePrompt(prompt, mode = 'image') {
   const englishPrompt = await translateToEnglish(prompt);
@@ -1109,12 +1146,32 @@ async function sendMessage() {
     updateSendButton();
     const typingEl = addMessageDOM('bot', '', true);
     try {
-      const enhancedSubject = await enhanceImagePrompt(knowSubject, 'image');
-      const baseSeed = Math.floor(Math.random() * 1e6);
-      const images = Array.from({ length: 6 }, (_, i) => ({
-        url: buildImageUrl(enhancedSubject, { width: 768, height: 768, seed: baseSeed + i * 13, model: 'flux', suffix: '' }),
-        caption: knowSubject,
-      }));
+      // Try real photos from Wikipedia/Commons first
+      const realImgs = await searchRealImages(knowSubject, 6);
+      let images;
+      if (realImgs.length >= 3) {
+        // Mostly real - fill with extra real or AI
+        images = realImgs.slice(0, 6).map(r => ({ url: r.url, caption: knowSubject }));
+        if (images.length < 6) {
+          const enhancedSubject = await enhanceImagePrompt(knowSubject, 'image');
+          const baseSeed = Math.floor(Math.random() * 1e6);
+          while (images.length < 6) {
+            images.push({
+              url: buildImageUrl(enhancedSubject, { width: 768, height: 768, seed: baseSeed + images.length * 13, model: 'flux', suffix: '' }),
+              caption: knowSubject,
+            });
+          }
+        }
+      } else {
+        const enhancedSubject = await enhanceImagePrompt(knowSubject, 'image');
+        const baseSeed = Math.floor(Math.random() * 1e6);
+        images = Array.from({ length: 6 }, (_, i) => ({
+          url: buildImageUrl(enhancedSubject, { width: 768, height: 768, seed: baseSeed + i * 13, model: 'flux', suffix: '' }),
+          caption: knowSubject,
+        }));
+        // Prepend any real images we found
+        realImgs.forEach((r, i) => { images[i] = { url: r.url, caption: knowSubject }; });
+      }
       const fakeConv = { ...conv, messages: [{ role: 'user', content: `הסבר בקצרה (3-4 משפטים) מה זה "${knowSubject}". ענה בעברית פשוטה וברורה.` }] };
       let explanation = '';
       try {
@@ -1172,9 +1229,16 @@ async function sendMessage() {
     updateSendButton();
     const typingEl = addMessageDOM('bot', '', true);
     try {
-      const enhancedPrompt = await enhanceImagePrompt(imagePrompt, 'image');
-      const seed = Math.floor(Math.random() * 1e6);
-      const url = buildImageUrl(enhancedPrompt, { seed, model: 'flux', suffix: '' });
+      // Try real photo first (Wikipedia + Commons)
+      const real = await searchRealImages(imagePrompt, 1);
+      let url;
+      if (real.length > 0) {
+        url = real[0].url;
+      } else {
+        const enhancedPrompt = await enhanceImagePrompt(imagePrompt, 'image');
+        const seed = Math.floor(Math.random() * 1e6);
+        url = buildImageUrl(enhancedPrompt, { seed, model: 'flux', suffix: '' });
+      }
       typingEl.remove();
       addImageCardDOM(imagePrompt, url);
       conv.messages.push({ role: 'assistant', content: `__IMG__${JSON.stringify({ prompt: imagePrompt, url })}` });
