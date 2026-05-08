@@ -378,9 +378,37 @@ async function fetchCommonsImages(query, count = 8) {
   return [];
 }
 
+// DuckDuckGo image search via CORS proxy - returns real web images (Google-like)
+async function searchDuckDuckGoImages(query, count = 8) {
+  const proxies = ['https://corsproxy.io/?', 'https://api.allorigins.win/raw?url=', 'https://api.codetabs.com/v1/proxy?quest='];
+  for (const proxy of proxies) {
+    try {
+      const pageUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&iax=images&ia=images`;
+      const r1 = await fetchWithTimeout(proxy + encodeURIComponent(pageUrl), {}, 6000);
+      if (!r1.ok) continue;
+      const html = await r1.text();
+      const m = html.match(/vqd=['"]([^'"&]+)['"]/) || html.match(/vqd=([\d-]+)/);
+      if (!m) continue;
+      const vqd = m[1];
+      const imgUrl = `https://duckduckgo.com/i.js?l=us-en&o=json&q=${encodeURIComponent(query)}&vqd=${encodeURIComponent(vqd)}&f=,,,,,&p=1&u=bing`;
+      const r2 = await fetchWithTimeout(proxy + encodeURIComponent(imgUrl), {}, 6000);
+      if (!r2.ok) continue;
+      const data = await r2.json();
+      const results = (data.results || []).filter(r => r.image && /^https?:\/\//.test(r.image));
+      if (results.length === 0) continue;
+      return results.slice(0, count).map(r => ({ url: r.image, thumbnail: r.thumbnail || r.image, source: 'ddg', title: r.title || '' }));
+    } catch {}
+  }
+  return [];
+}
+
 async function searchRealImages(query, count = 6) {
   const eng = await translateToEnglish(query);
-  const out = [];
+  // Primary: real web images via DuckDuckGo (Google-quality results)
+  const ddg = await searchDuckDuckGoImages(eng, count + 2);
+  if (ddg.length >= count) return ddg.slice(0, count);
+  // Fallback: Wikipedia + Commons
+  const out = [...ddg];
   const wiki = await fetchWikipediaImage(eng);
   if (wiki) out.push(wiki);
   const commons = await fetchCommonsImages(eng, count + 2);
@@ -1440,6 +1468,9 @@ function toggleSidebar() { els.app.classList.toggle('sidebar-open'); }
 function closeSidebarMobile() {
   if (window.innerWidth <= 820) els.app.classList.remove('sidebar-open');
 }
+
+const clearHistBtn = document.getElementById('clearHistoryBtn');
+if (clearHistBtn) clearHistBtn.addEventListener('click', deleteAllConversations);
 
 els.menuBtn.addEventListener('click', toggleSidebar);
 els.closeSidebarBtn.addEventListener('click', toggleSidebar);

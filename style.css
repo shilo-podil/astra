@@ -382,6 +382,24 @@ a { color: var(--accent); }
 .voice-status { font-size: 24px; color: white; font-weight: 600; letter-spacing: 0.02em; text-shadow: 0 2px 20px rgba(167,139,250,0.5); }
 .voice-hint { position: absolute; bottom: 26px; font-size: 13px; color: rgba(255,255,255,0.45); }
 
+.section-title-row { display: flex; align-items: center; justify-content: space-between; padding-right: 10px; }
+.section-action { width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; color: var(--text-muted); transition: background 0.15s, color 0.15s; }
+.section-action:hover { background: var(--bg-elev-2); color: var(--danger); }
+
+.install-banner { position: fixed; bottom: 20px; left: 20px; display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: linear-gradient(135deg, #a78bfa, #ec4899); color: white; border-radius: 12px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 24px rgba(167,139,250,.4); z-index: 50; font-family: Heebo, sans-serif; animation: slideIn 0.4s ease; max-width: calc(100vw - 40px); }
+@keyframes slideIn { from { transform: translateY(80px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.install-banner.mobile { bottom: auto; top: 12px; left: 50%; transform: translateX(-50%); right: auto; min-width: 320px; max-width: calc(100vw - 24px); }
+.install-banner.mobile { animation: slideDown 0.4s ease; }
+@keyframes slideDown { from { transform: translateX(-50%) translateY(-80px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+.ib-icon { font-size: 26px; flex-shrink: 0; }
+.ib-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ib-text strong { font-size: 14px; font-weight: 700; }
+.ib-text small { font-size: 11px; opacity: 0.85; font-weight: 400; }
+.ib-action { padding: 8px 14px; background: white; color: #ec4899; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit; flex-shrink: 0; }
+.ib-action:hover { transform: scale(1.04); }
+.ib-close { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.2); color: white; border: none; cursor: pointer; font-size: 22px; line-height: 1; flex-shrink: 0; padding: 0; }
+.ib-close:hover { background: rgba(255,255,255,0.35); }
+
 .welcome h1 {
   font-size: 36px;
   font-weight: 700;
