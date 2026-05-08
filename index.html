@@ -271,9 +271,9 @@
       showInstallBanner();
     });
 
-    // iOS doesn't fire beforeinstallprompt - show manual instructions
-    if (isIOS() && !isStandalone()) {
-      window.addEventListener('load', () => setTimeout(showInstallBanner, 4000));
+    // Mobile: ALWAYS show banner after a short delay (with or without prompt event)
+    if (isMobile() && !isStandalone()) {
+      window.addEventListener('load', () => setTimeout(showInstallBanner, 2500));
     }
   </script>
 </body>

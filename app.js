@@ -378,7 +378,7 @@ async function fetchCommonsImages(query, count = 8) {
   return [];
 }
 
-// DuckDuckGo image search via CORS proxy - returns real web images (Google-like)
+// DuckDuckGo image search via CORS proxy - returns real high-res web images (Google-like)
 async function searchDuckDuckGoImages(query, count = 8) {
   const proxies = ['https://corsproxy.io/?', 'https://api.allorigins.win/raw?url=', 'https://api.codetabs.com/v1/proxy?quest='];
   for (const proxy of proxies) {
@@ -390,13 +390,20 @@ async function searchDuckDuckGoImages(query, count = 8) {
       const m = html.match(/vqd=['"]([^'"&]+)['"]/) || html.match(/vqd=([\d-]+)/);
       if (!m) continue;
       const vqd = m[1];
-      const imgUrl = `https://duckduckgo.com/i.js?l=us-en&o=json&q=${encodeURIComponent(query)}&vqd=${encodeURIComponent(vqd)}&f=,,,,,&p=1&u=bing`;
+      // size:Large filter forces high-res results only
+      const imgUrl = `https://duckduckgo.com/i.js?l=us-en&o=json&q=${encodeURIComponent(query)}&vqd=${encodeURIComponent(vqd)}&f=,,,,,size%3ALarge&p=1&u=bing`;
       const r2 = await fetchWithTimeout(proxy + encodeURIComponent(imgUrl), {}, 6000);
       if (!r2.ok) continue;
       const data = await r2.json();
-      const results = (data.results || []).filter(r => r.image && /^https?:\/\//.test(r.image));
+      let results = (data.results || []).filter(r =>
+        r.image && /^https?:\/\//.test(r.image) &&
+        /\.(jpe?g|png|webp)(\?|$)/i.test(r.image) &&
+        (!r.width || r.width >= 1000) && (!r.height || r.height >= 600)
+      );
+      // Sort by resolution descending (largest first)
+      results.sort((a, b) => ((b.width || 0) * (b.height || 0)) - ((a.width || 0) * (a.height || 0)));
       if (results.length === 0) continue;
-      return results.slice(0, count).map(r => ({ url: r.image, thumbnail: r.thumbnail || r.image, source: 'ddg', title: r.title || '' }));
+      return results.slice(0, count).map(r => ({ url: r.image, thumbnail: r.thumbnail || r.image, source: 'ddg', title: r.title || '', width: r.width, height: r.height }));
     } catch {}
   }
   return [];
@@ -679,15 +686,36 @@ function renderHistory() {
     div.title = c.title + ' (קליק ימני לאפשרויות)';
     div.innerHTML = `<span>💬</span><span style="overflow:hidden;text-overflow:ellipsis;">${escapeHtml(c.title)}</span>`;
     div.addEventListener('click', () => loadConversation(c.id));
-    div.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      showContextMenu(e.pageX, e.pageY, [
+    const openMenu = (x, y) => {
+      showContextMenu(x, y, [
         { label: '▶ המשך שיחה', action: () => loadConversation(c.id) },
         { label: '✏️ ערוך שם', action: () => renameConversation(c.id) },
         { label: '🗑️ מחק שיחה זו', action: () => deleteConversation(c.id), danger: true },
         { label: '🗑️ מחק את כל הפרוייקטים', action: deleteAllConversations, danger: true },
       ]);
+    };
+    div.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      openMenu(e.pageX, e.pageY);
     });
+    // Long-press for mobile (500ms hold)
+    let pressTimer = null;
+    let didLongPress = false;
+    div.addEventListener('touchstart', (e) => {
+      didLongPress = false;
+      const touch = e.touches[0];
+      const x = touch.pageX, y = touch.pageY;
+      pressTimer = setTimeout(() => {
+        didLongPress = true;
+        if (navigator.vibrate) navigator.vibrate(40);
+        openMenu(x, y);
+        pressTimer = null;
+      }, 500);
+    }, { passive: true });
+    const cancelPress = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
+    div.addEventListener('touchend', (e) => { if (didLongPress) e.preventDefault(); cancelPress(); }, { passive: false });
+    div.addEventListener('touchmove', cancelPress, { passive: true });
+    div.addEventListener('touchcancel', cancelPress, { passive: true });
     els.history.appendChild(div);
   });
 }
