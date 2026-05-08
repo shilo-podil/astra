@@ -1,25 +1,27 @@
 {
-  "name": "Astra AI - הבוט שיודע הכל",
-  "short_name": "Astra AI",
-  "description": "בוט AI חכם בעברית שיודע הכל - קוד, כתיבה, לימוד, יצירה, תמונות וסרטונים",
+  "id": "/astra/",
+  "name": "Astra AI",
+  "short_name": "Astra",
+  "description": "בוט AI חכם בעברית - קוד, כתיבה, לימוד, יצירה, תמונות וסרטונים",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
   "theme_color": "#a78bfa",
   "background_color": "#0e0e10",
   "lang": "he",
   "dir": "rtl",
-  "categories": ["productivity", "education", "utilities"],
+  "categories": ["productivity", "education", "utilities", "social"],
+  "prefer_related_applications": false,
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "שיחה חדשה", "url": "./?new=1" },
-    { "name": "צייר תמונה", "url": "./?action=image" }
+    { "name": "שיחה חדשה", "url": "./?new=1", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "צייר תמונה", "url": "./?action=image", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
   ]
 }
