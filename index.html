@@ -12,8 +12,11 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#a78bfa" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Astra AI" />
-  <link rel="apple-touch-icon" href="icon.svg" />
+  <meta name="apple-mobile-web-app-title" content="Astra" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
 
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Astra AI - הבוט שיודע הכל" />
@@ -269,13 +272,39 @@
       document.addEventListener('keydown', handler, true);
     });
 
-    // iOS Safari can't auto-install - show one-time prompt after splash
+    function showIOSInstallGuide() {
+      if (document.getElementById('iosGuide')) return;
+      const guide = document.createElement('div');
+      guide.id = 'iosGuide';
+      guide.className = 'ios-guide';
+      guide.innerHTML = `
+        <div class="ios-guide-card">
+          <button class="ios-close" aria-label="סגור">×</button>
+          <div class="ios-guide-icon">
+            <img src="apple-touch-icon.png" alt="Astra" width="72" height="72" style="border-radius:18px;display:block;" />
+          </div>
+          <h2>התקן את Astra באייפון</h2>
+          <p class="ios-sub">תופיע במסך הראשי כמו ChatGPT, Netflix, ושאר האפליקציות</p>
+          <div class="ios-step"><div class="ios-num">1</div><div class="ios-text">לחץ על <strong>כפתור השיתוף</strong> <svg width="18" height="22" viewBox="0 0 18 22" fill="none" style="vertical-align:middle"><path d="M9 1v13M4 6l5-5 5 5M2 9v10a2 2 0 002 2h10a2 2 0 002-2V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> בתחתית Safari</div></div>
+          <div class="ios-step"><div class="ios-num">2</div><div class="ios-text">גלול ובחר <strong>"Add to Home Screen"</strong> 📱</div></div>
+          <div class="ios-step"><div class="ios-num">3</div><div class="ios-text">לחץ <strong>"Add"</strong> בפינה הימנית עליונה</div></div>
+          <button class="ios-got-it">הבנתי, בוא נתחיל</button>
+        </div>
+      `;
+      document.body.appendChild(guide);
+      const close = () => guide.remove();
+      guide.querySelector('.ios-close').onclick = close;
+      guide.querySelector('.ios-got-it').onclick = close;
+      guide.onclick = (e) => { if (e.target === guide) close(); };
+    }
+
+    // iOS Safari can't auto-install - show beautiful inline guide once after splash
     if (isIOS() && !isStandalone() && !localStorage.getItem('astra_ios_seen')) {
       window.addEventListener('load', () => {
         setTimeout(() => {
           if (isStandalone() || localStorage.getItem('astra_ios_seen')) return;
           localStorage.setItem('astra_ios_seen', '1');
-          alert('להתקנת Astra כאפליקציה על האייפון:\n\n1. לחץ על כפתור השיתוף ⬆️ בתחתית הדפדפן\n2. בחר "Add to Home Screen"\n3. לחץ "Add"\n\nהאפליקציה תופיע על המסך הראשי כמו אפליקציה רגילה.');
+          showIOSInstallGuide();
         }, 3500);
       });
     }

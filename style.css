@@ -401,6 +401,22 @@ a { color: var(--accent); }
 .ib-close { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.2); color: white; border: none; cursor: pointer; font-size: 22px; line-height: 1; flex-shrink: 0; padding: 0; }
 .ib-close:hover { background: rgba(255,255,255,0.35); }
 
+.ios-guide { position: fixed; inset: 0; z-index: 900; background: rgba(0,0,0,0.78); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: grid; place-items: center; padding: 18px; animation: fadeIn 0.3s ease; }
+.ios-guide-card { position: relative; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 24px; max-width: 420px; width: 100%; padding: 28px 24px 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.6); animation: pop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1.2); text-align: center; }
+.ios-close { position: absolute; top: 14px; left: 14px; width: 32px; height: 32px; border-radius: 50%; background: var(--bg-elev-2); color: var(--text-dim); border: none; font-size: 22px; cursor: pointer; display: grid; place-items: center; line-height: 1; padding: 0; }
+.ios-close:hover { background: var(--border); color: var(--text); }
+.ios-guide-icon { display: flex; justify-content: center; margin-bottom: 14px; }
+.ios-guide-icon img { box-shadow: 0 8px 24px rgba(167,139,250,0.4); }
+.ios-guide-card h2 { font-size: 22px; font-weight: 800; background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 6px; }
+.ios-sub { color: var(--text-dim); font-size: 13.5px; margin-bottom: 22px; line-height: 1.5; }
+.ios-step { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; text-align: right; }
+.ios-num { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-grad); color: white; font-weight: 800; display: grid; place-items: center; flex-shrink: 0; font-size: 14px; }
+.ios-text { font-size: 14px; color: var(--text); flex: 1; line-height: 1.4; }
+.ios-text strong { font-weight: 700; }
+.ios-got-it { width: 100%; padding: 14px; background: var(--accent-grad); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 14px; transition: opacity 0.15s, transform 0.1s; font-family: inherit; }
+.ios-got-it:hover { opacity: 0.92; }
+.ios-got-it:active { transform: scale(0.98); }
+
 .welcome h1 {
   font-size: 36px;
   font-weight: 700;
@@ -619,6 +635,7 @@ a { color: var(--accent); }
 
 .img-card { margin-top: 4px; max-width: 520px; border-radius: 16px; overflow: hidden; background: var(--bg-elev); border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
 .img-wrap { position: relative; width: 100%; aspect-ratio: 1 / 1; background: linear-gradient(135deg, #1a1a20, #252530); display: grid; place-items: center; }
+.img-wrap::after { content: 'Astra'; position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: white; padding: 3px 9px; border-radius: 7px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; pointer-events: none; font-family: Heebo, sans-serif; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
 .img-main { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.4s ease; }
 .img-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--text-dim); font-size: 14px; }
 .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }

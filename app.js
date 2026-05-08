@@ -395,7 +395,7 @@ async function searchDuckDuckGoImages(query, count = 8) {
       const r2 = await fetchWithTimeout(proxy + encodeURIComponent(imgUrl), {}, 6000);
       if (!r2.ok) continue;
       const data = await r2.json();
-      const WATERMARK_DOMAINS = ['gettyimages', 'shutterstock', 'alamy', 'dreamstime', 'istockphoto', '123rf.com', 'depositphotos', 'adobe.com/stock', 'adobe.stock', 'bigstockphoto', 'imago-images', 'agefotostock', 'newscom.com', 'stockfresh', 'fotosearch', 'profimedia', 'corbisimages', 'rmsothebys'];
+      const WATERMARK_DOMAINS = ['gettyimages', 'getty.com', 'gettyimages.com', 'shutterstock', 'alamy', 'c8.alamy', 'media.alamy', 'previews.alamy', 'dreamstime', 'istockphoto', 'istock-prod', '123rf.com', 'depositphotos', 'adobe.com/stock', 'adobe.stock', 'stock.adobe', 'bigstockphoto', 'imago-images', 'agefotostock', 'newscom.com', 'stockfresh', 'fotosearch', 'profimedia', 'corbisimages', 'rmsothebys', 'agefotostock', 'panthermedia', 'photoshelter', 'masterfile.com', 'splashnews', 'reuters.com/static', '/watermark', 'watermarked'];
       let results = (data.results || []).filter(r => {
         if (!r.image || !/^https?:\/\//.test(r.image)) return false;
         if (!/\.(jpe?g|png|webp)(\?|$)/i.test(r.image)) return false;
