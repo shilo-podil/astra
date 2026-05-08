@@ -1324,6 +1324,10 @@ function saveSettings() {
   localStorage.setItem(STORAGE_KEYS.theme, state.theme);
   localStorage.setItem(STORAGE_KEYS.lang, state.lang);
   applyTheme();
+  applyLanguage();
+  renderCategories();
+  renderSuggestions();
+  renderHistory();
   closeSettings();
   showToast('ההגדרות נשמרו ✓');
   renderMessages();
@@ -1515,6 +1519,7 @@ window.addEventListener('unhandledrejection', (e) => {
 });
 
 applyTheme();
+applyLanguage();
 renderCategories();
 renderSuggestions();
 renderHistory();
