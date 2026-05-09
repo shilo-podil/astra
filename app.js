@@ -416,10 +416,21 @@ async function searchDuckDuckGoImages(query, count = 8) {
 
 async function searchRealImages(query, count = 6) {
   const eng = await translateToEnglish(query);
-  // Primary: real web images via DuckDuckGo (Google-quality results)
-  const ddg = await searchDuckDuckGoImages(eng, count + 2);
-  if (ddg.length >= count) return ddg.slice(0, count);
-  // Fallback: Wikipedia + Commons
+  // Try DDG with original query
+  let ddg = await searchDuckDuckGoImages(eng, count + 4);
+  // If too few, retry with simpler query (just nouns)
+  if (ddg.length < count) {
+    const simpler = eng.split(/\s+/).filter(w => w.length > 2).slice(0, 3).join(' ');
+    if (simpler && simpler !== eng) {
+      const more = await searchDuckDuckGoImages(simpler, count + 4);
+      ddg = [...ddg, ...more];
+    }
+  }
+  if (ddg.length >= count) {
+    const seen = new Set();
+    return ddg.filter(r => { if (seen.has(r.url)) return false; seen.add(r.url); return true; }).slice(0, count);
+  }
+  // Add Wikipedia + Commons
   const out = [...ddg];
   const wiki = await fetchWikipediaImage(eng);
   if (wiki) out.push(wiki);
@@ -427,6 +438,42 @@ async function searchRealImages(query, count = 6) {
   out.push(...commons);
   const seen = new Set();
   return out.filter(r => { if (seen.has(r.url)) return false; seen.add(r.url); return true; }).slice(0, count);
+}
+
+// DDG video search - returns real YouTube/web videos
+async function searchDuckDuckGoVideos(query, count = 8) {
+  const proxies = ['https://corsproxy.io/?', 'https://api.allorigins.win/raw?url=', 'https://api.codetabs.com/v1/proxy?quest='];
+  for (const proxy of proxies) {
+    try {
+      const pageUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&iax=videos&ia=videos`;
+      const r1 = await fetchWithTimeout(proxy + encodeURIComponent(pageUrl), {}, 6000);
+      if (!r1.ok) continue;
+      const html = await r1.text();
+      const m = html.match(/vqd=['"]([^'"&]+)['"]/) || html.match(/vqd=([\d-]+)/);
+      if (!m) continue;
+      const vqd = m[1];
+      const vidUrl = `https://duckduckgo.com/v.js?l=us-en&o=json&q=${encodeURIComponent(query)}&vqd=${encodeURIComponent(vqd)}&f=,,,&p=1`;
+      const r2 = await fetchWithTimeout(proxy + encodeURIComponent(vidUrl), {}, 6000);
+      if (!r2.ok) continue;
+      const data = await r2.json();
+      const results = (data.results || []).filter(r => r.content && /^https?:\/\//.test(r.content));
+      if (results.length === 0) continue;
+      return results.slice(0, count).map(r => ({
+        url: r.content,
+        thumb: r.images?.large || r.images?.medium || r.images?.small || '',
+        title: r.title || '',
+        duration: r.duration || '',
+        source: r.publisher || 'web',
+        embedUrl: r.embed_url || r.embed_html ? extractYouTubeId(r.content) : null,
+      }));
+    } catch {}
+  }
+  return [];
+}
+
+function extractYouTubeId(url) {
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
+  return m ? `https://www.youtube.com/embed/${m[1]}?autoplay=0&rel=0` : null;
 }
 
 // AI-enhance prompt for image generation (like ChatGPT does for DALL-E)
@@ -867,6 +914,13 @@ function renderMessages() {
         return;
       } catch {}
     }
+    if (m.role === 'assistant' && m.content.startsWith('__YT__')) {
+      try {
+        const data = JSON.parse(m.content.slice(6));
+        addRealVideoCardDOM(data.prompt, data.embed, data.thumb, data.title);
+        return;
+      } catch {}
+    }
     if (m.role === 'assistant' && m.content.startsWith('__GRID__')) {
       try {
         const data = JSON.parse(m.content.slice(8));
@@ -927,6 +981,38 @@ function openLightbox(url, caption = '') {
     if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', esc); }
   });
   document.body.appendChild(lb);
+}
+
+function addRealVideoCardDOM(prompt, embedUrl, thumb, title) {
+  els.welcome.classList.add('hidden');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `
+    <div class="msg-avatar">A</div>
+    <div class="msg-body">
+      <div class="msg-name">Astra</div>
+      <div class="img-card yt-card">
+        <div class="yt-wrap">
+          <iframe class="yt-frame" src="${embedUrl}" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div class="img-footer">
+          <div class="img-prompt" title="${escapeHtml(title || prompt)}">🎬 ${escapeHtml(title || prompt)}</div>
+          <div class="img-actions">
+            <button class="img-btn" data-act="open" title="פתח ב-YouTube">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  div.querySelector('[data-act="open"]').addEventListener('click', () => {
+    const ytId = embedUrl.match(/embed\/([\w-]{11})/)?.[1];
+    if (ytId) window.open(`https://www.youtube.com/watch?v=${ytId}`, '_blank');
+  });
+  els.messages.appendChild(div);
+  els.chat.scrollTop = els.chat.scrollHeight;
+  return div;
 }
 
 function addVideoCardDOM(prompt, frames) {
@@ -1264,15 +1350,26 @@ async function sendMessage() {
     updateSendButton();
     const typingEl = addMessageDOM('bot', '', true);
     try {
-      const enhancedPrompt = await enhanceImagePrompt(videoPrompt, 'video');
-      const baseSeed = Math.floor(Math.random() * 1e6);
-      const frames = [];
-      for (let i = 0; i < 8; i++) {
-        frames.push(buildImageUrl(enhancedPrompt, { width: 2048, height: 2048, seed: baseSeed + i * 11, model: 'flux', suffix: '' }));
-      }
+      // Try real video from DDG first
+      const englishQuery = await translateToEnglish(videoPrompt);
+      const realVids = await searchDuckDuckGoVideos(englishQuery, 1);
+      const realVid = realVids.find(v => extractYouTubeId(v.url));
       typingEl.remove();
-      addVideoCardDOM(videoPrompt, frames);
-      conv.messages.push({ role: 'assistant', content: `__VID__${JSON.stringify({ prompt: videoPrompt, frames })}` });
+      if (realVid) {
+        const ytEmbed = extractYouTubeId(realVid.url);
+        addRealVideoCardDOM(videoPrompt, ytEmbed, realVid.thumb, realVid.title);
+        conv.messages.push({ role: 'assistant', content: `__YT__${JSON.stringify({ prompt: videoPrompt, embed: ytEmbed, thumb: realVid.thumb, title: realVid.title })}` });
+      } else {
+        // Fallback: AI frame sequence
+        const enhancedPrompt = await enhanceImagePrompt(videoPrompt, 'video');
+        const baseSeed = Math.floor(Math.random() * 1e6);
+        const frames = [];
+        for (let i = 0; i < 8; i++) {
+          frames.push(buildImageUrl(enhancedPrompt, { width: 2048, height: 2048, seed: baseSeed + i * 11, model: 'flux', suffix: '' }));
+        }
+        addVideoCardDOM(videoPrompt, frames);
+        conv.messages.push({ role: 'assistant', content: `__VID__${JSON.stringify({ prompt: videoPrompt, frames })}` });
+      }
       persist();
     } catch (err) {
       typingEl.remove();
