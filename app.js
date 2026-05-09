@@ -314,6 +314,18 @@ function tryQuickReply(text) {
   return null;
 }
 
+// Detect "X with Y" / "X in [team]" composite requests where real photos won't exist
+function isCompositeRequest(text) {
+  const t = text.toLowerCase();
+  // Hebrew composite patterns: "X במכבי", "X לובש", "X עם Y", "X של Y"
+  if (/[֐-׿]+\s+(?:במ[֐-׿]+|בלבוש|בחולצ\S*|בחליפת|לובש[ת]?|לבוש)\s+/.test(text)) return true;
+  if (/[֐-׿]+\s+(?:עם|ו)\s+[֐-׿]/.test(text) && text.split(/\s+/).length >= 4) return true;
+  // English: "X wearing Y", "X in Y jersey"
+  if (/\b(?:wearing|in\s+(?:the\s+)?[\w\s]+\s+(?:jersey|uniform|kit|shirt|outfit))\b/i.test(t)) return true;
+  if (/\bwith\s+a?\s+\w+\s+(?:wearing|holding)\b/i.test(t)) return true;
+  return false;
+}
+
 // Flexible image detection - matches even when descriptors come between trigger and subject
 const IMAGE_PATTERNS = [
   /^\s*(?:צייר|תצייר)\s+(?:לי\s+)?(.+)/i,
@@ -473,7 +485,7 @@ async function searchDuckDuckGoVideos(query, count = 8) {
 
 function extractYouTubeId(url) {
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
-  return m ? `https://www.youtube.com/embed/${m[1]}?autoplay=0&rel=0` : null;
+  return m ? `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&mute=1&rel=0&modestbranding=1&controls=1&showinfo=0&iv_load_policy=3` : null;
 }
 
 // AI-enhance prompt for image generation (like ChatGPT does for DALL-E)
@@ -482,7 +494,7 @@ async function enhanceImagePrompt(prompt, mode = 'image') {
   try {
     const sysMsg = mode === 'video'
       ? 'You are a professional cinematic prompt engineer. Take the user request and rewrite it as a detailed, vivid English video frame prompt. Add: specific subject details, dramatic lighting, composition, camera angle, atmosphere, cinematic style. Output ONLY the improved prompt, max 50 words. No preamble.'
-      : 'You are a professional image prompt engineer like Midjourney/DALL-E. Take the user request and rewrite it as a detailed, vivid English photo prompt. Add: specific subject details (clothing, expression, pose), lighting (golden hour, soft, dramatic), composition (close-up, wide), camera (DSLR, lens), atmosphere, ultra-realistic photographic style. Output ONLY the improved prompt, max 60 words. No preamble.';
+      : 'You are a professional image prompt engineer like Midjourney/DALL-E. Take the user request and rewrite it as a detailed, vivid English photo prompt. CRITICAL: If the request combines multiple entities (e.g., a person wearing a specific team\'s jersey, or two subjects together), describe them VERY specifically together (exact uniform colors, logos, pose, interaction). Add: specific subject details (face, clothing, expression, pose), lighting, composition, camera details, ultra-realistic photographic style. Output ONLY the improved prompt, max 80 words. No preamble.';
     const res = await fetchWithTimeout('https://text.pollinations.ai/openai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1387,15 +1399,22 @@ async function sendMessage() {
     updateSendButton();
     const typingEl = addMessageDOM('bot', '', true);
     try {
-      // Try real photo first (Wikipedia + Commons)
-      const real = await searchRealImages(imagePrompt, 1);
       let url;
-      if (real.length > 0) {
-        url = real[0].url;
-      } else {
+      // Composite requests (e.g., "Neymar wearing Maccabi jersey") → always use AI
+      if (isCompositeRequest(imagePrompt)) {
         const enhancedPrompt = await enhanceImagePrompt(imagePrompt, 'image');
         const seed = Math.floor(Math.random() * 1e6);
         url = buildImageUrl(enhancedPrompt, { seed, model: 'flux', suffix: '' });
+      } else {
+        // Single subject → try real photo first
+        const real = await searchRealImages(imagePrompt, 1);
+        if (real.length > 0) {
+          url = real[0].url;
+        } else {
+          const enhancedPrompt = await enhanceImagePrompt(imagePrompt, 'image');
+          const seed = Math.floor(Math.random() * 1e6);
+          url = buildImageUrl(enhancedPrompt, { seed, model: 'flux', suffix: '' });
+        }
       }
       typingEl.remove();
       addImageCardDOM(imagePrompt, url);
