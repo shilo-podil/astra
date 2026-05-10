@@ -1398,20 +1398,30 @@ function ensureConversation() { if (!state.activeId || !getActive()) newConversa
 
 async function sendMessage() {
   const text = els.input.value.trim();
-  if (!text || state.loading) return;
+  if ((!text && pendingAttachments.length === 0) || state.loading) return;
 
   ensureConversation();
   const conv = getActive();
-  conv.messages.push({ role: 'user', content: text });
+  // Build message with attachments
+  const attachments = pendingAttachments.slice();
+  const messageText = text || (attachments.length > 0 ? '📷 ' + attachments.map(a => a.name).join(', ') : '');
+  let displayContent = text;
+  if (attachments.length > 0) {
+    const imgsMarkdown = attachments.map(a => `![${a.name}](${a.dataUrl})`).join('\n');
+    displayContent = (text ? text + '\n\n' : '') + imgsMarkdown;
+  }
+  conv.messages.push({ role: 'user', content: displayContent || messageText, attachments: attachments.length > 0 ? attachments : undefined });
   if (conv.messages.length === 1) {
-    conv.title = text.length > 38 ? text.slice(0, 38) + '…' : text;
+    conv.title = (text || 'תמונה').slice(0, 38) + (text && text.length > 38 ? '…' : '');
   }
   conv.category = state.category;
 
   els.input.value = '';
+  pendingAttachments = [];
+  renderAttachments();
   autoResize();
   updateSendButton();
-  addMessageDOM('user', text);
+  addMessageDOM('user', displayContent || messageText);
   persist();
   renderHistory();
 
@@ -1687,7 +1697,7 @@ async function callPublicAI(conv) {
   const models = isApps
     ? ['openai-large', 'openai', 'mistral', 'searchgpt']
     : ['searchgpt', 'openai-large', 'openai', 'mistral'];
-  const timeout = isApps ? 60000 : 25000;
+  const timeout = isApps ? 90000 : 25000;
   let lastErr = null;
   for (const model of models) {
     try {
@@ -1722,7 +1732,7 @@ function autoResize() {
 }
 
 function updateSendButton() {
-  const has = els.input.value.trim().length > 0;
+  const has = els.input.value.trim().length > 0 || (typeof pendingAttachments !== 'undefined' && pendingAttachments.length > 0);
   els.sendBtn.disabled = !has || state.loading;
 }
 
@@ -1764,6 +1774,56 @@ function closeSidebarMobile() {
 
 const clearHistBtn = document.getElementById('clearHistoryBtn');
 if (clearHistBtn) clearHistBtn.addEventListener('click', deleteAllConversations);
+
+// File upload (+button)
+let pendingAttachments = [];
+const plusBtn = document.getElementById('plusBtn');
+const fileInput = document.getElementById('fileInput');
+const attachmentsEl = document.getElementById('attachments');
+
+function renderAttachments() {
+  if (!attachmentsEl) return;
+  attachmentsEl.innerHTML = '';
+  if (pendingAttachments.length === 0) {
+    attachmentsEl.style.display = 'none';
+    return;
+  }
+  attachmentsEl.style.display = 'flex';
+  pendingAttachments.forEach((att, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'attachment-chip';
+    chip.innerHTML = `
+      <img src="${att.dataUrl}" alt="${escapeHtml(att.name)}" />
+      <button class="att-remove" title="הסר">×</button>
+    `;
+    chip.querySelector('.att-remove').addEventListener('click', () => {
+      pendingAttachments.splice(i, 1);
+      renderAttachments();
+    });
+    attachmentsEl.appendChild(chip);
+  });
+}
+
+if (plusBtn && fileInput) {
+  plusBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files || []);
+    for (const f of files) {
+      if (!f.type.startsWith('image/')) continue;
+      if (f.size > 10 * 1024 * 1024) { showToast('הקובץ גדול מדי (מקסימום 10MB)', true); continue; }
+      const dataUrl = await new Promise((res) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = () => res(null);
+        r.readAsDataURL(f);
+      });
+      if (dataUrl) pendingAttachments.push({ name: f.name, type: f.type, dataUrl, size: f.size });
+    }
+    fileInput.value = '';
+    renderAttachments();
+    updateSendButton();
+  });
+}
 
 els.menuBtn.addEventListener('click', toggleSidebar);
 els.closeSidebarBtn.addEventListener('click', toggleSidebar);
