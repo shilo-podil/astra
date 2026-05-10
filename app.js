@@ -11,8 +11,8 @@ const STORAGE_KEYS = {
 };
 
 const I18N = {
-  he: { newChat: 'שיחה חדשה', categories: 'קטגוריות', history: 'היסטוריה', settings: 'הגדרות', cat_general: 'כללי', cat_code: 'קוד ופיתוח', cat_writing: 'כתיבה', cat_learning: 'לימוד והבנה', cat_life: 'חיים ויומיום', cat_business: 'עסקים', cat_creative: 'יצירה ורעיונות', cat_analysis: 'ניתוח ומחקר', inputPlaceholder: 'שאל את Astra כל דבר...', disclaimer: 'Astra AI יכולה לטעות. בדוק מידע חשוב.', sendHint: 'Enter לשליחה • Shift+Enter לשורה חדשה', welcomeTitle: 'שלום, אני', emptyHistory: 'אין שיחות עדיין', settingsTitle: 'הגדרות', apiKeyLabel: 'Anthropic API Key', nameLabel: 'שם תצוגה', namePh: 'איך לקרוא לך?', themeLabel: 'ערכת נושא', themeDark: 'כהה', themeLight: 'בהיר', langLabel: 'שפה', cancel: 'ביטול', save: 'שמור', askGeneral: 'במה אוכל לעזור היום?', askCode: 'מה תרצה שאכתוב לך בקוד?', askWriting: 'מה תרצה שאכתוב?', askLearning: 'מה תרצה ללמוד היום?', askLife: 'במה תרצה שאעזור לך?', askBusiness: 'על מה תרצה לעבוד היום?', askCreative: 'מה תרצה ליצור?', askAnalysis: 'מה תרצה שאנתח עבורך?' },
-  en: { newChat: 'New chat', categories: 'Categories', history: 'History', settings: 'Settings', cat_general: 'General', cat_code: 'Code & Dev', cat_writing: 'Writing', cat_learning: 'Learning', cat_life: 'Life & Daily', cat_business: 'Business', cat_creative: 'Creative', cat_analysis: 'Analysis', inputPlaceholder: 'Ask Astra anything...', disclaimer: 'Astra AI can make mistakes. Verify important info.', sendHint: 'Enter to send • Shift+Enter for new line', welcomeTitle: "Hello, I'm", emptyHistory: 'No conversations yet', settingsTitle: 'Settings', apiKeyLabel: 'Anthropic API Key', nameLabel: 'Display name', namePh: 'What should I call you?', themeLabel: 'Theme', themeDark: 'Dark', themeLight: 'Light', langLabel: 'Language', cancel: 'Cancel', save: 'Save', askGeneral: 'How can I help you today?', askCode: 'What code do you need?', askWriting: 'What would you like me to write?', askLearning: 'What would you like to learn?', askLife: 'How can I help you?', askBusiness: 'What are we working on today?', askCreative: 'What would you like to create?', askAnalysis: 'What would you like me to analyze?' },
+  he: { newChat: 'שיחה חדשה', categories: 'קטגוריות', history: 'היסטוריה', settings: 'הגדרות', cat_general: 'כללי', cat_code: 'קוד ופיתוח', cat_writing: 'כתיבה', cat_learning: 'לימוד והבנה', cat_life: 'חיים ויומיום', cat_business: 'עסקים', cat_creative: 'יצירה ורעיונות', cat_analysis: 'ניתוח ומחקר', cat_apps: 'אפליקציות', inputPlaceholder: 'שאל את Astra כל דבר...', disclaimer: 'Astra AI יכולה לטעות. בדוק מידע חשוב.', sendHint: 'Enter לשליחה • Shift+Enter לשורה חדשה', welcomeTitle: 'שלום, אני', emptyHistory: 'אין שיחות עדיין', settingsTitle: 'הגדרות', apiKeyLabel: 'Anthropic API Key', nameLabel: 'שם תצוגה', namePh: 'איך לקרוא לך?', themeLabel: 'ערכת נושא', themeDark: 'כהה', themeLight: 'בהיר', langLabel: 'שפה', cancel: 'ביטול', save: 'שמור', askGeneral: 'במה אוכל לעזור היום?', askCode: 'מה תרצה שאכתוב לך בקוד?', askWriting: 'מה תרצה שאכתוב?', askLearning: 'מה תרצה ללמוד היום?', askLife: 'במה תרצה שאעזור לך?', askBusiness: 'על מה תרצה לעבוד היום?', askCreative: 'מה תרצה ליצור?', askAnalysis: 'מה תרצה שאנתח עבורך?', askApps: 'איזו אפליקציה תרצה שאיצור?' },
+  en: { newChat: 'New chat', categories: 'Categories', history: 'History', settings: 'Settings', cat_general: 'General', cat_code: 'Code & Dev', cat_writing: 'Writing', cat_learning: 'Learning', cat_life: 'Life & Daily', cat_business: 'Business', cat_creative: 'Creative', cat_analysis: 'Analysis', cat_apps: 'Apps', inputPlaceholder: 'Ask Astra anything...', disclaimer: 'Astra AI can make mistakes. Verify important info.', sendHint: 'Enter to send • Shift+Enter for new line', welcomeTitle: "Hello, I'm", emptyHistory: 'No conversations yet', settingsTitle: 'Settings', apiKeyLabel: 'Anthropic API Key', nameLabel: 'Display name', namePh: 'What should I call you?', themeLabel: 'Theme', themeDark: 'Dark', themeLight: 'Light', langLabel: 'Language', cancel: 'Cancel', save: 'Save', askGeneral: 'How can I help you today?', askCode: 'What code do you need?', askWriting: 'What would you like me to write?', askLearning: 'What would you like to learn?', askLife: 'How can I help you?', askBusiness: 'What are we working on today?', askCreative: 'What would you like to create?', askAnalysis: 'What would you like me to analyze?', askApps: 'What app would you like me to build?' },
   es: { newChat: 'Nueva conversación', categories: 'Categorías', history: 'Historial', settings: 'Ajustes', cat_general: 'General', cat_code: 'Código', cat_writing: 'Escritura', cat_learning: 'Aprendizaje', cat_life: 'Vida diaria', cat_business: 'Negocios', cat_creative: 'Creativo', cat_analysis: 'Análisis', inputPlaceholder: 'Pregúntame cualquier cosa...', disclaimer: 'Astra AI puede equivocarse. Verifica información importante.', sendHint: 'Enter para enviar • Shift+Enter nueva línea', welcomeTitle: 'Hola, soy', emptyHistory: 'Sin conversaciones aún', settingsTitle: 'Ajustes', apiKeyLabel: 'Clave API Anthropic', nameLabel: 'Nombre', namePh: '¿Cómo te llamas?', themeLabel: 'Tema', themeDark: 'Oscuro', themeLight: 'Claro', langLabel: 'Idioma', cancel: 'Cancelar', save: 'Guardar', askGeneral: '¿Cómo puedo ayudarte hoy?', askCode: '¿Qué código necesitas?', askWriting: '¿Qué te gustaría que escriba?', askLearning: '¿Qué te gustaría aprender?', askLife: '¿En qué puedo ayudarte?', askBusiness: '¿En qué trabajamos hoy?', askCreative: '¿Qué quieres crear?', askAnalysis: '¿Qué quieres analizar?' },
   ar: { newChat: 'محادثة جديدة', categories: 'الفئات', history: 'السجل', settings: 'الإعدادات', cat_general: 'عام', cat_code: 'البرمجة', cat_writing: 'الكتابة', cat_learning: 'التعلم', cat_life: 'الحياة', cat_business: 'الأعمال', cat_creative: 'إبداعي', cat_analysis: 'التحليل', inputPlaceholder: 'اسألني أي شيء...', disclaimer: 'قد ترتكب Astra AI أخطاء. تحقق من المعلومات المهمة.', sendHint: 'Enter للإرسال • Shift+Enter سطر جديد', welcomeTitle: 'مرحباً، أنا', emptyHistory: 'لا توجد محادثات بعد', settingsTitle: 'الإعدادات', apiKeyLabel: 'مفتاح Anthropic API', nameLabel: 'الاسم', namePh: 'بماذا أناديك؟', themeLabel: 'السمة', themeDark: 'داكن', themeLight: 'فاتح', langLabel: 'اللغة', cancel: 'إلغاء', save: 'حفظ', askGeneral: 'كيف يمكنني مساعدتك اليوم؟', askCode: 'ما الكود الذي تحتاجه؟', askWriting: 'ماذا تريدني أن أكتب؟', askLearning: 'ماذا تريد أن تتعلم؟', askLife: 'بماذا أساعدك؟', askBusiness: 'على ماذا نعمل اليوم؟', askCreative: 'ماذا تريد أن تنشئ؟', askAnalysis: 'ماذا تريدني أن أحلل؟' },
   ru: { newChat: 'Новый чат', categories: 'Категории', history: 'История', settings: 'Настройки', cat_general: 'Общее', cat_code: 'Код', cat_writing: 'Текст', cat_learning: 'Обучение', cat_life: 'Жизнь', cat_business: 'Бизнес', cat_creative: 'Творчество', cat_analysis: 'Анализ', inputPlaceholder: 'Спросите Astra о чём угодно...', disclaimer: 'Astra AI может ошибаться. Проверяйте важную информацию.', sendHint: 'Enter — отправить • Shift+Enter — новая строка', welcomeTitle: 'Привет, я', emptyHistory: 'Чатов пока нет', settingsTitle: 'Настройки', apiKeyLabel: 'Ключ Anthropic API', nameLabel: 'Имя', namePh: 'Как тебя зовут?', themeLabel: 'Тема', themeDark: 'Тёмная', themeLight: 'Светлая', langLabel: 'Язык', cancel: 'Отмена', save: 'Сохранить', askGeneral: 'Чем могу помочь сегодня?', askCode: 'Какой код нужен?', askWriting: 'Что мне написать?', askLearning: 'Что хотите изучить?', askLife: 'Чем помочь?', askBusiness: 'Над чем работаем?', askCreative: 'Что создадим?', askAnalysis: 'Что проанализировать?' },
@@ -236,7 +236,28 @@ const CATEGORIES = {
       { emoji: '🧩', text: 'נתח את הסיכונים של AI לחברה' },
     ],
   },
+  apps: {
+    name: 'אפליקציות',
+    system: 'אתה Astra AI במצב יוצר אפליקציות. כשמבקשים ליצור אפליקציה, משחק, כלי או דף, החזר תמיד קוד HTML מלא, עצמאי ומוכן לעבודה. כל ה-CSS וה-JS חייב להיות INLINE בתוך אותו קובץ HTML יחיד. אסור להשתמש בתלויות חיצוניות (אלא אם נדרש מקדם CDN פופולרי כמו Tailwind מ-CDN). הקוד חייב להיות יפה, מודרני, רספונסיבי, ועם UX מצוין. עטוף את הקוד כך: ```html\\n<!DOCTYPE html>\\n... \\n```. תמיד התחל ב-<!DOCTYPE html> וסיים ב-</html>. לפני הקוד הוסף משפט קצר בעברית של מה האפליקציה עושה. אל תזכיר אף פעם שאתה GPT/Claude/AI אחר.' + LANG_INSTRUCTION,
+    prompts: [
+      { emoji: '🎮', text: 'תיצור משחק נחש שזז עם החצים' },
+      { emoji: '⏱️', text: 'תיצור טיימר פומודורו עם מצב כהה' },
+      { emoji: '🧮', text: 'תיצור מחשבון יפה במצב גרדיאנט' },
+      { emoji: '✅', text: 'תיצור רשימת מטלות עם שמירה אוטומטית' },
+    ],
+  },
 };
+
+// Extract HTML app code from AI response
+function extractAppCode(text) {
+  let m = text.match(/```html\s*\n([\s\S]*?)```/i);
+  if (m && m[1] && /<\s*html|<!DOCTYPE/i.test(m[1])) return m[1].trim();
+  m = text.match(/```\s*\n(<!DOCTYPE[\s\S]*?<\/html>)\s*```/i);
+  if (m && m[1]) return m[1].trim();
+  m = text.match(/(<!DOCTYPE\s+html[\s\S]*?<\/html>)/i);
+  if (m && m[1]) return m[1].trim();
+  return null;
+}
 
 const QUICK_REPLIES = [
   {
@@ -926,6 +947,13 @@ function renderMessages() {
         return;
       } catch {}
     }
+    if (m.role === 'assistant' && m.content.startsWith('__APP__')) {
+      try {
+        const data = JSON.parse(m.content.slice(7));
+        addAppCardDOM(data.prompt, data.code);
+        return;
+      } catch {}
+    }
     if (m.role === 'assistant' && m.content.startsWith('__YT__')) {
       try {
         const data = JSON.parse(m.content.slice(6));
@@ -993,6 +1021,71 @@ function openLightbox(url, caption = '') {
     if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', esc); }
   });
   document.body.appendChild(lb);
+}
+
+function addAppCardDOM(prompt, code) {
+  els.welcome.classList.add('hidden');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  const blob = new Blob([code], { type: 'text/html' });
+  const blobUrl = URL.createObjectURL(blob);
+  div.innerHTML = `
+    <div class="msg-avatar">A</div>
+    <div class="msg-body">
+      <div class="msg-name">Astra</div>
+      <div class="img-card app-card">
+        <div class="app-toolbar">
+          <span class="app-title">📱 ${escapeHtml(prompt)}</span>
+          <div class="app-actions">
+            <button class="img-btn" data-act="reload" title="טען מחדש">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><polyline points="1 20 1 14 7 14"/><path d="M20.49 15A9 9 0 0 1 5.64 18.36L1 14"/></svg>
+            </button>
+            <button class="img-btn" data-act="fullscreen" title="מסך מלא">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+            </button>
+            <button class="img-btn" data-act="download" title="הורד HTML">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <button class="img-btn" data-act="code" title="הצג/הסתר קוד">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="app-frame">
+          <iframe class="app-iframe" src="${blobUrl}" sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock allow-same-origin allow-popups" loading="lazy"></iframe>
+        </div>
+        <div class="app-code-panel" hidden>
+          <pre><code>${escapeHtml(code)}</code></pre>
+          <button class="app-copy-btn">📋 העתק קוד</button>
+        </div>
+      </div>
+    </div>
+  `;
+  const iframe = div.querySelector('.app-iframe');
+  div.querySelector('[data-act="reload"]').addEventListener('click', () => {
+    const newBlob = new Blob([code], { type: 'text/html' });
+    iframe.src = URL.createObjectURL(newBlob);
+  });
+  div.querySelector('[data-act="fullscreen"]').addEventListener('click', () => {
+    if (iframe.requestFullscreen) iframe.requestFullscreen();
+    else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
+  });
+  div.querySelector('[data-act="download"]').addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = `astra-app-${Date.now()}.html`;
+    a.click();
+  });
+  const codePanel = div.querySelector('.app-code-panel');
+  div.querySelector('[data-act="code"]').addEventListener('click', () => {
+    codePanel.hidden = !codePanel.hidden;
+  });
+  div.querySelector('.app-copy-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(code).then(() => showToast('הקוד הועתק ✓'));
+  });
+  els.messages.appendChild(div);
+  els.chat.scrollTop = els.chat.scrollHeight;
+  return div;
 }
 
 function addRealVideoCardDOM(prompt, embedUrl, thumb, title) {
@@ -1475,6 +1568,21 @@ async function sendMessage() {
   try {
     const reply = state.apiKey ? await callClaude(conv) : await callPublicAI(conv);
     typingEl.remove();
+    // Apps category: detect HTML and render as runnable app
+    if (state.category === 'apps') {
+      const appCode = extractAppCode(reply);
+      if (appCode) {
+        const intro = reply.replace(/```[\s\S]*?```/g, '').replace(/<!DOCTYPE[\s\S]*?<\/html>/i, '').trim();
+        if (intro && intro.length > 4) addMessageDOM('bot', intro);
+        addAppCardDOM(text, appCode);
+        conv.messages.push({ role: 'assistant', content: intro || 'הנה האפליקציה:' });
+        conv.messages.push({ role: 'assistant', content: `__APP__${JSON.stringify({ prompt: text, code: appCode })}` });
+        persist();
+        state.loading = false;
+        updateSendButton();
+        return;
+      }
+    }
     addMessageDOM('bot', reply);
     conv.messages.push({ role: 'assistant', content: reply });
     persist();
