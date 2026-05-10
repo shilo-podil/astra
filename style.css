@@ -641,7 +641,10 @@ a { color: var(--accent); }
 .app-card { max-width: 720px; }
 .app-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; background: var(--bg-elev); border-bottom: 1px solid var(--border); }
 .app-title { font-size: 13px; color: var(--text-dim); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
-.app-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.app-actions { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
+.app-open-btn { padding: 6px 12px; background: var(--accent-grad); color: white; border: none; border-radius: 7px; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity 0.15s, transform 0.1s; }
+.app-open-btn:hover { opacity: 0.9; }
+.app-open-btn:active { transform: scale(0.96); }
 .app-frame { position: relative; width: 100%; height: 480px; background: white; }
 .app-iframe { width: 100%; height: 100%; border: 0; display: block; }
 .app-code-panel { background: var(--bg); border-top: 1px solid var(--border); max-height: 320px; overflow: auto; position: relative; }

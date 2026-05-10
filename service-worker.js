@@ -1,4 +1,4 @@
-const CACHE_NAME = 'astra-v29';
+const CACHE_NAME = 'astra-v30';
 const ASSETS = [
   './',
   './index.html',

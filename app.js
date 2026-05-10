@@ -248,14 +248,34 @@ const CATEGORIES = {
   },
 };
 
-// Extract HTML app code from AI response
+function wrapHtmlFragment(content) {
+  if (/<html/i.test(content)) {
+    return /<!DOCTYPE/i.test(content) ? content : '<!DOCTYPE html>\n' + content;
+  }
+  const body = /<body/i.test(content) ? content : `<body>${content}</body>`;
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>${body}</html>`;
+}
+
+// Extract HTML app code - tries many formats, wraps fragments into full docs
 function extractAppCode(text) {
-  let m = text.match(/```html\s*\n([\s\S]*?)```/i);
-  if (m && m[1] && /<\s*html|<!DOCTYPE/i.test(m[1])) return m[1].trim();
-  m = text.match(/```\s*\n(<!DOCTYPE[\s\S]*?<\/html>)\s*```/i);
+  let m = text.match(/```html\s*\n?([\s\S]*?)```/i);
+  if (m && m[1]) {
+    const code = m[1].trim();
+    if (/<!DOCTYPE|<html/i.test(code)) return code;
+    if (/<head|<body|<style|<script|<div|<canvas/i.test(code)) return wrapHtmlFragment(code);
+  }
+  m = text.match(/```\w*\s*\n?([\s\S]*?)```/);
+  if (m && m[1]) {
+    const code = m[1].trim();
+    if (/<!DOCTYPE|<html/i.test(code)) return code;
+    if (/<head|<body|<style|<script/i.test(code) && /<\/[a-z]+>/i.test(code)) return wrapHtmlFragment(code);
+  }
+  m = text.match(/(<!DOCTYPE\s+html[\s\S]*?<\/html\s*>)/i);
   if (m && m[1]) return m[1].trim();
-  m = text.match(/(<!DOCTYPE\s+html[\s\S]*?<\/html>)/i);
-  if (m && m[1]) return m[1].trim();
+  m = text.match(/(<html[\s\S]*?<\/html\s*>)/i);
+  if (m && m[1]) return '<!DOCTYPE html>\n' + m[1].trim();
+  m = text.match(/(<body[\s\S]*?<\/body\s*>)/i);
+  if (m && m[1]) return wrapHtmlFragment(m[1]);
   return null;
 }
 
@@ -1037,11 +1057,9 @@ function addAppCardDOM(prompt, code) {
         <div class="app-toolbar">
           <span class="app-title">📱 ${escapeHtml(prompt)}</span>
           <div class="app-actions">
+            <button class="app-open-btn" data-act="open-tab">↗ פתח באפליקציה</button>
             <button class="img-btn" data-act="reload" title="טען מחדש">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><polyline points="1 20 1 14 7 14"/><path d="M20.49 15A9 9 0 0 1 5.64 18.36L1 14"/></svg>
-            </button>
-            <button class="img-btn" data-act="fullscreen" title="מסך מלא">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
             </button>
             <button class="img-btn" data-act="download" title="הורד HTML">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1066,9 +1084,15 @@ function addAppCardDOM(prompt, code) {
     const newBlob = new Blob([code], { type: 'text/html' });
     iframe.src = URL.createObjectURL(newBlob);
   });
-  div.querySelector('[data-act="fullscreen"]').addEventListener('click', () => {
-    if (iframe.requestFullscreen) iframe.requestFullscreen();
-    else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
+  div.querySelector('[data-act="open-tab"]').addEventListener('click', () => {
+    const w = window.open('', '_blank');
+    if (w) {
+      w.document.open();
+      w.document.write(code);
+      w.document.close();
+    } else {
+      window.open(blobUrl, '_blank');
+    }
   });
   div.querySelector('[data-act="download"]').addEventListener('click', () => {
     const a = document.createElement('a');
