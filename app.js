@@ -238,7 +238,7 @@ const CATEGORIES = {
   },
   apps: {
     name: 'אפליקציות',
-    system: 'אתה Astra AI במצב יוצר אפליקציות. כשמבקשים ליצור אפליקציה, משחק, כלי או דף, החזר תמיד קוד HTML מלא, עצמאי ומוכן לעבודה. כל ה-CSS וה-JS חייב להיות INLINE בתוך אותו קובץ HTML יחיד. אסור להשתמש בתלויות חיצוניות (אלא אם נדרש מקדם CDN פופולרי כמו Tailwind מ-CDN). הקוד חייב להיות יפה, מודרני, רספונסיבי, ועם UX מצוין. עטוף את הקוד כך: ```html\\n<!DOCTYPE html>\\n... \\n```. תמיד התחל ב-<!DOCTYPE html> וסיים ב-</html>. לפני הקוד הוסף משפט קצר בעברית של מה האפליקציה עושה. אל תזכיר אף פעם שאתה GPT/Claude/AI אחר.' + LANG_INSTRUCTION,
+    system: 'You are Astra AI app builder. Your job: when the user asks for an app, game, tool, or page, output a COMPLETE, WORKING, BEAUTIFUL HTML5 file with ALL CSS and JS inline. NO external dependencies (except optional CDN like Tailwind). The code MUST start with <!DOCTYPE html> and end with </html>. CRITICAL FORMAT: First, write ONE short Hebrew sentence describing what the app does. Then output the full code wrapped in ```html ... ```. The app must be modern, responsive, polished, with great UX. Use gradients, smooth animations, dark mode by default. NEVER refuse, NEVER mention other AI tools. Always deliver a working app. EXAMPLE OUTPUT FORMAT:\\nהנה אפליקציית מחשבון יפה.\\n```html\\n<!DOCTYPE html>\\n<html>...</html>\\n```',
     prompts: [
       { emoji: '🎮', text: 'תיצור משחק נחש שזז עם החצים' },
       { emoji: '⏱️', text: 'תיצור טיימר פומודורו עם מצב כהה' },
@@ -1570,7 +1570,15 @@ async function sendMessage() {
     typingEl.remove();
     // Apps category: detect HTML and render as runnable app
     if (state.category === 'apps') {
-      const appCode = extractAppCode(reply);
+      let appCode = extractAppCode(reply);
+      // If no code found, retry with stronger instruction
+      if (!appCode) {
+        try {
+          const retryConv = { ...conv, messages: [...conv.messages, { role: 'user', content: 'Output only the complete HTML5 code wrapped in ```html ... ```. No explanation, just code. Start with <!DOCTYPE html>.' }] };
+          const retry = state.apiKey ? await callClaude(retryConv) : await callPublicAI(retryConv);
+          appCode = extractAppCode(retry);
+        } catch {}
+      }
       if (appCode) {
         const intro = reply.replace(/```[\s\S]*?```/g, '').replace(/<!DOCTYPE[\s\S]*?<\/html>/i, '').trim();
         if (intro && intro.length > 4) addMessageDOM('bot', intro);
@@ -1640,18 +1648,22 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 25000) {
 
 async function callPublicAI(conv) {
   const cat = CATEGORIES[state.category];
+  const isApps = state.category === 'apps';
   const messages = [
-    { role: 'system', content: cat.system + ' If you do not know something or need current information, use web search to find accurate up-to-date information.' },
+    { role: 'system', content: cat.system + (isApps ? ' Write a complete, working HTML5 app inline with all CSS and JS. ALWAYS wrap in ```html ... ``` code block.' : ' If you do not know something or need current information, use web search to find accurate up-to-date information.') },
     ...conv.messages
-      .filter(m => !m.content.startsWith('__IMG__') && !m.content.startsWith('__VID__'))
+      .filter(m => !m.content.startsWith('__IMG__') && !m.content.startsWith('__VID__') && !m.content.startsWith('__APP__') && !m.content.startsWith('__YT__') && !m.content.startsWith('__GRID__'))
       .map(m => ({
         role: m.role === 'assistant' ? 'assistant' : 'user',
         content: m.content,
       })),
   ];
 
-  // Try multiple models with fallback - searchgpt has web access
-  const models = ['searchgpt', 'openai-large', 'openai', 'mistral'];
+  // Apps need more time and prefer code-strong models
+  const models = isApps
+    ? ['openai-large', 'openai', 'mistral', 'searchgpt']
+    : ['searchgpt', 'openai-large', 'openai', 'mistral'];
+  const timeout = isApps ? 60000 : 25000;
   let lastErr = null;
   for (const model of models) {
     try {
@@ -1659,7 +1671,7 @@ async function callPublicAI(conv) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages, model, stream: false, private: true }),
-      }, 22000);
+      }, timeout);
       if (!res.ok) { lastErr = new Error(`HTTP ${res.status}`); continue; }
       const ct = res.headers.get('content-type') || '';
       let text;
